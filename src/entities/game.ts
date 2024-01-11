@@ -8,6 +8,7 @@ import {
 import { GamePlayer, Team } from "./game_player";
 
 export enum GameMode {
+  UNKNOWN = "UNKNOWN",
   POINT_30 = "POINT_30",
   POINT_45 = "POINT_45",
   POINT_60 = "POINT_60",
@@ -15,6 +16,7 @@ export enum GameMode {
 }
 
 export enum HeroSelectionMode {
+  UNKNOWN = "UNKNOWN",
   ALL_PICK = "ALL_PICK",
   ALL_RANDOM = "ALL_RANDOM",
 }
@@ -25,7 +27,9 @@ export class Game {
   id: number;
   @CreateDateColumn()
   createdDate: Date;
-  @OneToMany(() => GamePlayer, (player) => player.game)
+  @OneToMany(() => GamePlayer, (player) => player.game, {
+    cascade: true,
+  })
   players: GamePlayer[];
   @Column()
   gameMode: GameMode;

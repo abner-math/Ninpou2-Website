@@ -1,17 +1,15 @@
 import { Router, Request, Response } from "express";
 import { validationResult, checkSchema } from "express-validator";
 import { GameMode, HeroSelectionMode, Game } from "../entities/game";
-import { PlayerState, Team, GamePlayer } from "../entities/game_player";
-import { Player } from "../entities/player";
-import { Item } from "../entities/item";
-import { Hero } from "../entities/hero";
+import { PlayerState, Team } from "../entities/game_player";
 import { AppDataSource } from "../db";
 
 const router = Router();
+const gameRepository = AppDataSource.getRepository(Game);
 
 const gameValidationRules = checkSchema({
   durationSeconds: {
-    isInt: true,
+    isNumeric: true,
     notEmpty: true,
   },
   gameMode: {
@@ -49,15 +47,8 @@ const gameValidationRules = checkSchema({
   "players.*.player": {
     notEmpty: true,
   },
-  "players.*.player.name": {
-    isString: true,
-    notEmpty: true,
-  },
-  "players.*.hero": {
-    notEmpty: true,
-  },
-  "players.*.hero.name": {
-    isString: true,
+  "players.*.player.steamId": {
+    isInt: true,
     notEmpty: true,
   },
   "players.*.kills": {
@@ -76,6 +67,14 @@ const gameValidationRules = checkSchema({
     isInt: true,
     notEmpty: true,
   },
+  "players.*.winner": {
+    isBoolean: true,
+    notEmpty: true,
+  },
+  "players.*.level": {
+    isInt: true,
+    notEmpty: true,
+  },
   "players.*.team": {
     isIn: {
       options: [[...Object.values(Team)]],
@@ -86,7 +85,7 @@ const gameValidationRules = checkSchema({
     isArray: {
       options: {
         min: 0,
-        max: 9,
+        max: 20,
       },
     },
   },
@@ -96,33 +95,35 @@ const gameValidationRules = checkSchema({
   },
 });
 
+router.get("/", async (req: Request, res: Response) => {
+  const take =
+    (typeof req.query.take === "string" && parseInt(req.query.take)) || 10;
+  const skip =
+    (typeof req.query.skip === "string" && parseInt(req.query.skip)) || 0;
+  const [games, count] = await gameRepository.findAndCount({
+    relations: {
+      players: {
+        items: true,
+        hero: true,
+        player: true,
+      },
+    },
+    order: {
+      createdDate: "DESC",
+    },
+    skip,
+    take,
+  });
+  return res.json({ games, count });
+});
+
 router.post("/", gameValidationRules, async (req: Request, res: Response) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
   const game = req.body as Game;
-  const gameRepository = AppDataSource.getRepository(Game);
-  const gamePlayerRepository = AppDataSource.getRepository(GamePlayer);
-  const playerRepository = AppDataSource.getRepository(Player);
-  const heroRepository = AppDataSource.getRepository(Hero);
-  const itemRepository = AppDataSource.getRepository(Item);
   await gameRepository.save(game);
-  await Promise.all(
-    game.players.map((player) => [
-      playerRepository.save(player.player),
-      heroRepository.save(player.hero),
-      ...player.items.map((item) => itemRepository.save(item)),
-    ])
-  );
-  await Promise.all(
-    game.players.map((player) =>
-      gamePlayerRepository.save({
-        ...player,
-        game,
-      })
-    )
-  );
   res.status(201).json(game);
 });
 
