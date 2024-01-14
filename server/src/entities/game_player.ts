@@ -1,15 +1,15 @@
 import {
-  PrimaryGeneratedColumn,
   Entity,
+  PrimaryGeneratedColumn,
   Column,
   JoinTable,
   ManyToOne,
   ManyToMany,
 } from "typeorm";
-import { Game } from "./game";
-import { Item } from "./item";
-import { Hero } from "./hero";
 import { Player } from "./player";
+import { Hero } from "./hero";
+import { Item } from "./item";
+import { Game } from "./game";
 
 export enum Team {
   UNKNOWN = "UNKNOWN",

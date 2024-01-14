@@ -5,7 +5,7 @@ import {
   CreateDateColumn,
   OneToMany,
 } from "typeorm";
-import { GamePlayer, Team } from "./game_player";
+import { Team, GamePlayer } from "./game_player";
 
 export enum GameMode {
   UNKNOWN = "UNKNOWN",

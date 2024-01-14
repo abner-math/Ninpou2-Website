@@ -1,5 +1,5 @@
 // src/index.js
-import express, { Express, Request, Response } from "express";
+import express, { Express } from "express";
 import morgan from "morgan";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -9,7 +9,7 @@ import { AppDataSource } from "./db";
 dotenv.config();
 
 const app: Express = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 8000;
 
 AppDataSource.initialize().catch((error) => {
   console.error(error);
@@ -27,10 +27,6 @@ app.use((req, res, next) => {
   next();
 });
 app.use("/games", gameRoutes);
-
-app.get("/", (req: Request, res: Response) => {
-  res.send("Express + TypeScript Server");
-});
 
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);

@@ -1,6 +1,6 @@
 import { Router, Request, Response } from "express";
 import { validationResult, checkSchema } from "express-validator";
-import { GameMode, HeroSelectionMode, Game } from "../entities/game";
+import { Game, GameMode, HeroSelectionMode } from "../entities/game";
 import { PlayerState, Team } from "../entities/game_player";
 import { AppDataSource } from "../db";
 
