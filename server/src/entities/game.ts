@@ -4,8 +4,10 @@ import {
   Column,
   CreateDateColumn,
   OneToMany,
+  ManyToMany,
 } from "typeorm";
 import { Team, GamePlayer } from "./game_player";
+import { Ladder } from "./ladder";
 
 export enum GameMode {
   UNKNOWN = "UNKNOWN",
@@ -39,4 +41,8 @@ export class Game {
   durationSeconds: number;
   @Column()
   winnerTeam: Team;
+  @Column()
+  rankeable: boolean;
+  @ManyToMany(() => Ladder, (ladder) => ladder.games)
+  ladders: Ladder[];
 }

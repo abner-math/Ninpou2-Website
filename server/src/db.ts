@@ -5,13 +5,14 @@ import { GamePlayer } from "./entities/game_player";
 import { Hero } from "./entities/hero";
 import { Item } from "./entities/item";
 import { Player } from "./entities/player";
+import { Ladder } from "./entities/ladder";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
   url:
     process.env.DATABASE_URL ||
     "postgresql://abneraraujo@localhost:5432/ninpou",
-  entities: [Game, GamePlayer, Hero, Item, Player],
+  entities: [Game, GamePlayer, Hero, Item, Player, Ladder],
   synchronize: true,
   logging: false,
 });

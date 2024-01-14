@@ -2,10 +2,12 @@ import { Router, Request, Response } from "express";
 import { validationResult, checkSchema } from "express-validator";
 import { Game, GameMode, HeroSelectionMode } from "../entities/game";
 import { PlayerState, Team } from "../entities/game_player";
+import { Ladder } from "../entities/ladder";
 import { AppDataSource } from "../db";
 
 const router = Router();
 const gameRepository = AppDataSource.getRepository(Game);
+const ladderRepository = AppDataSource.getRepository(Ladder);
 
 const gameValidationRules = checkSchema({
   durationSeconds: {
@@ -100,6 +102,31 @@ router.get("/", async (req: Request, res: Response) => {
     (typeof req.query.take === "string" && parseInt(req.query.take)) || 10;
   const skip =
     (typeof req.query.skip === "string" && parseInt(req.query.skip)) || 0;
+  const ladderName =
+    (typeof req.query.ladder === "string" && req.query.ladder) || "";
+  if (ladderName) {
+    const ladder = await ladderRepository.findOne({
+      relations: {
+        games: {
+          players: {
+            items: true,
+            hero: true,
+            player: true,
+          },
+        },
+      },
+      where: {
+        name: ladderName,
+      },
+    });
+    if (!ladder) {
+      return res.status(404).json({ errors: [{ msg: "Ladder not found" }] });
+    }
+    return res.json({
+      games: ladder.games.slice(skip, skip + take),
+      count: ladder.games.length,
+    });
+  }
   const [games, count] = await gameRepository.findAndCount({
     relations: {
       players: {
@@ -123,6 +150,18 @@ router.post("/", gameValidationRules, async (req: Request, res: Response) => {
     return res.status(400).json({ errors: errors.array() });
   }
   const game = req.body as Game;
+  game.rankeable =
+    game.players.filter((player) => player.state === PlayerState.CONNECTED)
+      .length === 9 &&
+    ((game.gameMode === GameMode.POINT_30 && game.durationSeconds >= 25 * 60) ||
+      (game.gameMode === GameMode.POINT_45 &&
+        game.durationSeconds >= 40 * 60) ||
+      (game.gameMode === GameMode.POINT_60 &&
+        game.durationSeconds >= 55 * 60) ||
+      (game.gameMode === GameMode.NORMAL && game.durationSeconds >= 15 * 60));
+  for (const player of game.players) {
+    player.rankeable = game.rankeable;
+  }
   await gameRepository.save(game);
   res.status(201).json(game);
 });

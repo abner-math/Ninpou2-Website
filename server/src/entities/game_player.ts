@@ -56,6 +56,8 @@ export class GamePlayer {
   team: Team;
   @Column()
   winner: boolean;
+  @Column()
+  rankeable: boolean;
   @ManyToMany(() => Item, (item) => item.players, {
     cascade: true,
   })
