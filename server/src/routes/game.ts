@@ -1,13 +1,23 @@
 import { Router, Request, Response } from "express";
 import { validationResult, checkSchema } from "express-validator";
-import { Game, GameMode, HeroSelectionMode } from "../entities/game";
-import { PlayerState, Team } from "../entities/game_player";
-import { Ladder } from "../entities/ladder";
+import {
+  GameMode,
+  HeroSelectionMode,
+  PlayerState,
+  Team,
+} from "../shared/enums";
+import { Game } from "../entities/game";
 import { AppDataSource } from "../db";
+import {
+  FindManyOptions,
+  FindOptionsWhere,
+  FindOptionsOrder,
+  Between,
+  Like,
+} from "typeorm";
 
 const router = Router();
 const gameRepository = AppDataSource.getRepository(Game);
-const ladderRepository = AppDataSource.getRepository(Ladder);
 
 const gameValidationRules = checkSchema({
   durationSeconds: {
@@ -98,36 +108,48 @@ const gameValidationRules = checkSchema({
 });
 
 router.get("/", async (req: Request, res: Response) => {
-  const take =
-    (typeof req.query.take === "string" && parseInt(req.query.take)) || 10;
-  const skip =
-    (typeof req.query.skip === "string" && parseInt(req.query.skip)) || 0;
-  const ladderName =
-    (typeof req.query.ladder === "string" && req.query.ladder) || "";
-  if (ladderName) {
-    const ladder = await ladderRepository.findOne({
-      relations: {
-        games: {
-          players: {
-            items: true,
-            hero: true,
-            player: true,
-          },
-        },
-      },
-      where: {
-        name: ladderName,
-      },
-    });
-    if (!ladder) {
-      return res.status(404).json({ errors: [{ msg: "Ladder not found" }] });
+  console.log(req.query);
+  const take = req.getQueryInt("take", 10);
+  const skip = req.getQueryInt("skip", 0);
+  const filters =
+    (req.query.filters && JSON.parse(req.query.filters as string)) || [];
+  const sorting =
+    (req.query.sorting && JSON.parse(req.query.sorting as string)) || [];
+  const where: FindOptionsWhere<Game>[] = [];
+  for (const filter of filters) {
+    // Date fields
+    if (filter.id === "createdData" && filter.value[0] && filter.value[1]) {
+      where.push({
+        createdDate: Between(
+          new Date(filter.value[0]),
+          new Date(filter.value[1])
+        ),
+      });
     }
-    return res.json({
-      games: ladder.games.slice(skip, skip + take),
-      count: ladder.games.length,
-    });
+    // Enum fields
+    if (["gameMode", "heroSelectionMode"].includes(filter.id) && filter.value) {
+      where.push({
+        [filter.id as keyof Game]: Like(
+          `%${filter.value.replace(" ", "_").toUpperCase()}%`
+        ),
+      });
+    }
   }
-  const [games, count] = await gameRepository.findAndCount({
+  const order: FindOptionsOrder<Game> = {};
+  let hasSorting = false;
+  for (const sort of sorting) {
+    if (sort.id === "createdDate") {
+      order.createdDate = sort.desc ? "DESC" : "ASC";
+      hasSorting = true;
+    } else if (sort.id === "durationSeconds") {
+      order.durationSeconds = sort.desc ? "DESC" : "ASC";
+      hasSorting = true;
+    }
+  }
+  if (!hasSorting) {
+    order.createdDate = "DESC";
+  }
+  const options: FindManyOptions<Game> = {
     relations: {
       players: {
         items: true,
@@ -135,12 +157,12 @@ router.get("/", async (req: Request, res: Response) => {
         player: true,
       },
     },
-    order: {
-      createdDate: "DESC",
-    },
+    where,
+    order,
     skip,
     take,
-  });
+  };
+  const [games, count] = await gameRepository.findAndCount(options);
   return res.json({ games, count });
 });
 
@@ -159,8 +181,13 @@ router.post("/", gameValidationRules, async (req: Request, res: Response) => {
       (game.gameMode === GameMode.POINT_60 &&
         game.durationSeconds >= 55 * 60) ||
       (game.gameMode === GameMode.NORMAL && game.durationSeconds >= 15 * 60));
+  game.ladderNames = [];
   for (const player of game.players) {
+    player.createdDate = game.createdDate;
     player.rankeable = game.rankeable;
+    player.gameMode = game.gameMode;
+    player.heroSelectionMode = game.heroSelectionMode;
+    player.ladderNames = [];
   }
   await gameRepository.save(game);
   res.status(201).json(game);

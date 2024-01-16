@@ -6,25 +6,13 @@ import {
   OneToMany,
   ManyToMany,
 } from "typeorm";
-import { Team, GamePlayer } from "./game_player";
+import { GamePlayer } from "./game_player";
 import { Ladder } from "./ladder";
-
-export enum GameMode {
-  UNKNOWN = "UNKNOWN",
-  POINT_30 = "POINT_30",
-  POINT_45 = "POINT_45",
-  POINT_60 = "POINT_60",
-  NORMAL = "NORMAL",
-}
-
-export enum HeroSelectionMode {
-  UNKNOWN = "UNKNOWN",
-  ALL_PICK = "ALL_PICK",
-  ALL_RANDOM = "ALL_RANDOM",
-}
+import { Team, GameMode, HeroSelectionMode } from "../shared/enums";
+import type { IGame } from "../shared/types";
 
 @Entity()
-export class Game {
+export class Game implements IGame {
   @PrimaryGeneratedColumn()
   id: number;
   @CreateDateColumn()
@@ -45,4 +33,6 @@ export class Game {
   rankeable: boolean;
   @ManyToMany(() => Ladder, (ladder) => ladder.games)
   ladders: Ladder[];
+  @Column("text", { array: true })
+  ladderNames: string[];
 }

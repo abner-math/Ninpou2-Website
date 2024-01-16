@@ -26,6 +26,8 @@ declare global {
     interface Request {
       ladder: Ladder | null | undefined;
       game: Game | null | undefined;
+      getQueryString: (key: string, defaultValue?: string) => string | undefined;
+      getQueryInt: (key: string, defaultValue?: number) => number | undefined;
     }
   }
 }
@@ -39,6 +41,12 @@ app.use((req, res, next) => {
   if (req.body.payload) {
     req.body = JSON.parse(req.body.payload);
   }
+  req.getQueryString = (key: string, defaultValue?: string): string | undefined => {
+    return (typeof req.query[key] === 'string' && req.query[key] as string) || defaultValue;
+  };
+  req.getQueryInt = (key: string, defaultValue?: number): number | undefined => {
+    return (typeof req.query[key] === 'string' && parseInt(req.query[key] as string)) || defaultValue;
+  };
   next();
 });
 app.use("/games", gameRoutes);

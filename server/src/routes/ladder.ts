@@ -99,6 +99,9 @@ router.use(
   "/:ladder_name/games/:game_id",
   async (req: Request, res: Response, next: NextFunction) => {
     req.game = await gameRepository.findOne({
+      relations: {
+        players: true,
+      },
       where: { id: parseInt(req.params.game_id) },
     });
     if (!req.game) {
@@ -126,8 +129,17 @@ router.post(
     if (!ladder.games.find((game) => game.id === ladderGame.id)) {
       ladder.games.push(ladderGame);
     }
+    if (!ladderGame.ladderNames.includes(ladder.name)) {
+      ladderGame.ladderNames.push(ladder.name);
+    }
+    for (const player of ladderGame.players) {
+      if (!player.ladderNames.includes(ladder.name)) {
+        player.ladderNames.push(ladder.name);
+      }
+    }
     ladder.numGames = ladder.games.length;
     await ladderRepository.save(ladder);
+    await gameRepository.save(ladderGame);
     res.status(201).json(ladder);
   }
 );
@@ -142,8 +154,17 @@ router.delete(
     const ladder = req.ladder!;
     const ladderGame = req.game!;
     ladder.games = ladder.games.filter((game) => game.id !== ladderGame.id);
+    ladderGame.ladderNames = ladderGame.ladderNames.filter(
+      (name) => name !== ladder.name
+    );
+    for (const player of ladderGame.players) {
+      player.ladderNames = player.ladderNames.filter(
+        (name) => name !== ladder.name
+      );
+    }
     ladder.numGames = ladder.games.length;
     await ladderRepository.save(ladder);
+    await gameRepository.save(ladderGame);
     res.status(200).json(ladder);
   }
 );

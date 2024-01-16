@@ -1,63 +1,164 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-import ReactPaginate from "react-paginate";
+import {
+  MaterialReactTable,
+  useMaterialReactTable,
+  type MRT_ColumnDef,
+  type MRT_ColumnFiltersState,
+  type MRT_PaginationState,
+  type MRT_SortingState,
+} from "material-react-table";
 import "react-tabs/style/react-tabs.css";
 import "./App.css";
-import { Game } from "../../server/src/entities/game";
+import type { IGame as Game } from "./shared/types";
 
 function App() {
-  function Games({ currentGames }: { currentGames: Game[] }) {
-    return (
-      <>
-        {currentGames &&
-          currentGames.map((game: Game) => (
-            <div>
-              <h3>Game #{game.id}</h3>
-            </div>
-          ))}
-      </>
-    );
-  }
+  type GamesApiResponse = {
+    games: Array<Game>;
+    count: number;
+  };
 
-  function PaginatedGames({ gamesPerPage }: { gamesPerPage: number }) {
-    const [currentGames, setCurrentGames] = useState([]);
-    const [gamesCount, setGamesCount] = useState(0);
-    const [gamesOffset, setGamesOffset] = useState(0);
-    useEffect(() => {
-      fetch(`/games?take=${gamesPerPage}&skip=${gamesOffset}`)
-        .then((res) => res.json())
-        .then((data) => {
-          setCurrentGames(data.games);
-          setGamesCount(data.count);
-        });
-    });
-    const handlePageClick = (event: { selected: number }) => {
-      setGamesOffset(event.selected * gamesPerPage);
-    };
-    return (
-      <>
-        <Games currentGames={currentGames} />
-        <ReactPaginate
-          breakLabel="..."
-          nextLabel="next >"
-          onPageChange={handlePageClick}
-          pageRangeDisplayed={5}
-          pageCount={Math.ceil(gamesCount / gamesPerPage)}
-          previousLabel="< previous"
-          renderOnZeroPageCount={null}
-          pageClassName="page-item"
-          pageLinkClassName="page-link"
-          previousClassName="page-item"
-          previousLinkClassName="page-link"
-          nextClassName="page-item"
-          nextLinkClassName="page-link"
-          breakClassName="page-item"
-          breakLinkClassName="page-link"
-          containerClassName="pagination"
-          activeClassName="active"
-        />
-      </>
+  function GamesTable() {
+    const [games, setGames] = useState<Game[]>([]);
+    const [isError, setIsError] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [isRefetching, setIsRefetching] = useState(false);
+    const [rowCount, setRowCount] = useState(0);
+
+    //table state
+    const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
+      [],
     );
+    const [globalFilter, setGlobalFilter] = useState("");
+    const [sorting, setSorting] = useState<MRT_SortingState>([{ id: "createdDate", desc: true }]);
+    const [pagination, setPagination] = useState<MRT_PaginationState>({
+      pageIndex: 0,
+      pageSize: 10,
+    });
+
+    useEffect(() => {
+      const fetchData = async () => {
+        if (!games.length) {
+          setIsLoading(true);
+        } else {
+          setIsRefetching(true);
+        }
+
+        const url = new URL(
+          "/games",
+          process.env.NODE_ENV === "production"
+            ? "https://www.material-react-table.com"
+            : "http://localhost:8000",
+        );
+        url.searchParams.set(
+          "take",
+          `${pagination.pageSize}`,
+        );
+        url.searchParams.set(
+          "skip",
+          `${pagination.pageIndex * pagination.pageSize}`,
+        );
+        url.searchParams.set("filters", JSON.stringify(columnFilters ?? []));
+        url.searchParams.set("globalFilter", globalFilter ?? '');
+        url.searchParams.set("sorting", JSON.stringify(sorting ?? []));
+
+        try {
+          const response = await fetch(url.href);
+          const json = (await response.json()) as GamesApiResponse;
+          setGames(json.games);
+          setRowCount(json.count);
+        } catch (error) {
+          setIsError(true);
+          console.error(error);
+          return;
+        }
+        setIsError(false);
+        setIsLoading(false);
+        setIsRefetching(false);
+      };
+      fetchData();
+    }, [
+      columnFilters, //re-fetch when column filters change
+      globalFilter, //re-fetch when global filter changes
+      pagination.pageIndex, //re-fetch when page index changes
+      pagination.pageSize, //re-fetch when page size changes
+      sorting, //re-fetch when sorting changes
+    ]);
+
+    const columns = useMemo<MRT_ColumnDef<Game>[]>(
+      () => [
+        {
+          accessorFn: (row) => new Date(row.createdDate),
+          id: "createdDate",
+          header: "Date",
+          filterVariant: "date",
+          filterFn: "betweenInclusive",
+          sortingFn: "datetime",
+          Cell: ({ cell }) => cell.getValue<Date>()?.toLocaleString(), //render Date as a string
+        },
+        {
+          accessorFn: (row) => `${row.players.length} / 9`,
+          id: "players",
+          header: "Slots",
+          enableSorting: false,
+          enableColumnFilter: false,
+        },
+        {
+          accessorFn: (row) => row.gameMode.replace("_", " "),
+          id: "gameMode",
+          header: "Game Mode",
+          enableSorting: false,
+        },
+        {
+          accessorFn: (row) => row.heroSelectionMode.replace("_", " "),
+          id: "heroSelectionMode",
+          header: "Hero Selection",
+          enableSorting: false,
+        },
+        {
+
+          accessorFn: (row) => Math.ceil(row.durationSeconds / 60),
+          id: "durationSeconds",
+          header: "Duration (min)",
+          enableSorting: true,
+        }
+      ],
+      [],
+    );
+
+    const table = useMaterialReactTable({
+      columns,
+      data: games,
+      enableRowSelection: true,
+      enableGlobalFilter: false,
+      getRowId: (row) => row.id + "",
+      initialState: { showColumnFilters: false },
+      manualFiltering: true,
+      manualPagination: true,
+      manualSorting: true,
+      muiToolbarAlertBannerProps: isError
+        ? {
+          color: 'error',
+          children: 'Error loading data',
+        }
+        : undefined,
+      onColumnFiltersChange: setColumnFilters,
+      onGlobalFilterChange: setGlobalFilter,
+      onPaginationChange: setPagination,
+      onSortingChange: setSorting,
+      rowCount,
+      state: {
+        columnFilters,
+        globalFilter,
+        isLoading,
+        pagination,
+        showAlertBanner: isError,
+        showProgressBars: isRefetching,
+        sorting,
+      },
+    });
+
+    return <MaterialReactTable table={table} />;
   }
 
   return (
@@ -69,7 +170,7 @@ function App() {
           <Tab>Heroes</Tab>
         </TabList>
         <TabPanel>
-          <PaginatedGames gamesPerPage={2} />,
+          <GamesTable />,
         </TabPanel>
         <TabPanel>
         </TabPanel>

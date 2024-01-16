@@ -2,6 +2,7 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
+  CreateDateColumn,
   JoinTable,
   ManyToOne,
   ManyToMany,
@@ -10,28 +11,20 @@ import { Player } from "./player";
 import { Hero } from "./hero";
 import { Item } from "./item";
 import { Game } from "./game";
-
-export enum Team {
-  UNKNOWN = "UNKNOWN",
-  KONOHAGAKURE = "KONOHAGAKURE",
-  OTOGAKURE = "OTOGAKURE",
-  AKATSUKI = "AKATSUKI",
-}
-
-export enum PlayerState {
-  UNKNOWN = "UNKNOWN",
-  NOT_YET_CONNECTED = "NOT_YET_CONNECTED",
-  CONNECTED = "CONNECTED",
-  DISCONNECTED = "DISCONNECTED",
-  ABANDONED = "ABANDONED",
-  LOADING = "LOADING",
-  FAILED = "FAILED",
-}
+import {
+  PlayerState,
+  Team,
+  GameMode,
+  HeroSelectionMode,
+} from "../shared/enums";
+import type { IGamePlayer } from "../shared/types";
 
 @Entity()
-export class GamePlayer {
+export class GamePlayer implements IGamePlayer {
   @PrimaryGeneratedColumn()
   id: number;
+  @CreateDateColumn()
+  createdDate: Date;
   @Column()
   state: PlayerState;
   @ManyToOne(() => Player, (player) => player.players, {
@@ -65,4 +58,10 @@ export class GamePlayer {
   items: Item[];
   @ManyToOne(() => Game, (game) => game.players)
   game: Game;
+  @Column()
+  gameMode: GameMode;
+  @Column()
+  heroSelectionMode: HeroSelectionMode;
+  @Column("text", { array: true })
+  ladderNames: string[];
 }
