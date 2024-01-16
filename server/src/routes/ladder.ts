@@ -35,7 +35,8 @@ router.post("/", ladderValidationRules, async (req: Request, res: Response) => {
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   } else if (
-    await ladderRepository.findOne({ where: { name: req.body.name } })
+    req.body.name?.toLowerCase() === "public" ||
+    (await ladderRepository.findOne({ where: { name: req.body.name } }))
   ) {
     return res.status(400).json({
       errors: [
@@ -46,6 +47,7 @@ router.post("/", ladderValidationRules, async (req: Request, res: Response) => {
     });
   }
   const ladder = req.body as Ladder;
+  ladder.name = ladder.name.toLowerCase();
   ladder.passphrase = await bcrypt.hash(ladder.passphrase, 10);
   ladder.numGames = 0;
   await ladderRepository.save(ladder);
@@ -69,7 +71,7 @@ router.use(
       relations: {
         games: true,
       },
-      where: { name: req.params.ladder_name },
+      where: { name: req.params.ladder_name.toLowerCase() },
     });
     if (!req.ladder) {
       return res.status(404).json({

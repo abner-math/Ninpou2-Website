@@ -134,6 +134,12 @@ router.get("/", async (req: Request, res: Response) => {
         ),
       });
     }
+    // Boolean fields
+    if (["rankeable"].includes(filter.id) && filter.value) {
+      where.push({
+        [filter.id as keyof Game]: filter.value === "true",
+      });
+    }
   }
   const order: FindOptionsOrder<Game> = {};
   let hasSorting = false;
@@ -144,6 +150,8 @@ router.get("/", async (req: Request, res: Response) => {
     } else if (sort.id === "durationSeconds") {
       order.durationSeconds = sort.desc ? "DESC" : "ASC";
       hasSorting = true;
+    } else if (sort.id === "rankeable") {
+      order.rankeable = sort.desc ? "DESC" : "ASC";
     }
   }
   if (!hasSorting) {

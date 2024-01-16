@@ -1,7 +1,21 @@
 #container {
-  margin: 1rem;
+  margin: 1em;
 }
 
-.games {
-  margin-bottom: 1rem;
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background-image: url(../public/images/background.png);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+.gamestable {
+  background-image: url(../public/images/scoreboard.png);
+  background-size: autp;
+  background-repeat: repeat repeat;
+  padding: 2em;
 }
