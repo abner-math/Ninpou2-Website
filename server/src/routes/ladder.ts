@@ -55,13 +55,18 @@ router.post("/", ladderValidationRules, async (req: Request, res: Response) => {
 });
 
 router.get("/", async (req: Request, res: Response) => {
-  const ladders = await ladderRepository.find({
-    select: ["name", "numGames"],
-    order: {
-      numGames: "DESC",
-    },
+  const numGames = await gameRepository.count();
+  const search = req.getQueryString("search", "");
+  const ladders = await ladderRepository
+    .createQueryBuilder("ladder")
+    .select(["ladder.name", "ladder.numGames"])
+    .where("LOWER(ladder.name) LIKE LOWER(:search)", { search: `%${search}%` })
+    .orderBy("ladder.numGames", "DESC")
+    .getMany();
+  return res.json({
+    default: [{ name: "public", numGames }],
+    custom: ladders,
   });
-  return res.json({ ladders });
 });
 
 router.use(

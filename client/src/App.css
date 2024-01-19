@@ -13,7 +13,7 @@ body {
   background-attachment: fixed;
 }
 
-.gamestable {
+.table {
   background-image: url(../public/images/scoreboard.png);
   background-size: autp;
   background-repeat: repeat repeat;

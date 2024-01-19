@@ -28,6 +28,7 @@ interface IGame {
   durationSeconds: number;
   winnerTeam: Team;
   rankeable: boolean;
+  balance?: string;
   ladders: ILadder[];
   ladderNames: string[];
 }

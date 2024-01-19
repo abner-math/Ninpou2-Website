@@ -31,6 +31,10 @@ export class Game implements IGame {
   winnerTeam: Team;
   @Column()
   rankeable: boolean;
+  @Column({
+    nullable: true,
+  })
+  balance?: string;
   @ManyToMany(() => Ladder, (ladder) => ladder.games)
   ladders: Ladder[];
   @Column("text", { array: true })

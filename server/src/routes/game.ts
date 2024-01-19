@@ -8,13 +8,6 @@ import {
 } from "../shared/enums";
 import { Game } from "../entities/game";
 import { AppDataSource } from "../db";
-import {
-  FindManyOptions,
-  FindOptionsWhere,
-  FindOptionsOrder,
-  Between,
-  Like,
-} from "typeorm";
 
 const router = Router();
 const gameRepository = AppDataSource.getRepository(Game);
@@ -109,68 +102,63 @@ const gameValidationRules = checkSchema({
 
 router.get("/", async (req: Request, res: Response) => {
   console.log(req.query);
-  const take = req.getQueryInt("take", 10);
-  const skip = req.getQueryInt("skip", 0);
+  const query = gameRepository.createQueryBuilder("game");
+  query.take(req.getQueryInt("take", 10));
+  query.skip(req.getQueryInt("skip", 0));
   const filters =
     (req.query.filters && JSON.parse(req.query.filters as string)) || [];
   const sorting =
     (req.query.sorting && JSON.parse(req.query.sorting as string)) || [];
-  const where: FindOptionsWhere<Game>[] = [];
   for (const filter of filters) {
     // Date fields
     if (filter.id === "createdData" && filter.value[0] && filter.value[1]) {
-      where.push({
-        createdDate: Between(
-          new Date(filter.value[0]),
-          new Date(filter.value[1])
-        ),
-      });
+      query.andWhere("game.createdDate BETWEEN :start AND :end");
+      query.setParameter("start", filter.value[0]);
+      query.setParameter("end", filter.value[1]);
     }
     // Enum fields
     if (["gameMode", "heroSelectionMode"].includes(filter.id) && filter.value) {
-      where.push({
-        [filter.id as keyof Game]: Like(
-          `%${filter.value.replace(" ", "_").toUpperCase()}%`
-        ),
-      });
+      query.andWhere(`game.${filter.id} LIKE :${filter.id}`);
+      query.setParameter(
+        filter.id,
+        `%${filter.value.replace(" ", "_").toUpperCase()}%`
+      );
     }
     // Boolean fields
     if (["rankeable"].includes(filter.id) && filter.value) {
-      where.push({
-        [filter.id as keyof Game]: filter.value === "true",
-      });
+      query.andWhere(`game.${filter.id} = :${filter.id}`);
+      query.setParameter(filter.id, filter.value === "true");
+    }
+    // String fields
+    if (["balance"].includes(filter.id) && filter.value) {
+      query.andWhere(`game.${filter.id} LIKE :${filter.id}`);
+      query.setParameter(filter.id, `%${filter.value}%`);
+    }
+    // Ladder field
+    if (filter.id === "ladder" && filter.value && filter.value !== "public") {
+      query.andWhere(`game.ladderNames @> ARRAY[:ladder]`);
+      query.setParameter("ladder", filter.value.toLowerCase());
     }
   }
-  const order: FindOptionsOrder<Game> = {};
   let hasSorting = false;
   for (const sort of sorting) {
-    if (sort.id === "createdDate") {
-      order.createdDate = sort.desc ? "DESC" : "ASC";
+    if (
+      ["createdDate", "durationSeconds", "rankeable", "balance"].includes(
+        sort.id
+      )
+    ) {
+      query.orderBy(`game.${sort.id}`, sort.desc ? "DESC" : "ASC");
       hasSorting = true;
-    } else if (sort.id === "durationSeconds") {
-      order.durationSeconds = sort.desc ? "DESC" : "ASC";
-      hasSorting = true;
-    } else if (sort.id === "rankeable") {
-      order.rankeable = sort.desc ? "DESC" : "ASC";
     }
   }
   if (!hasSorting) {
-    order.createdDate = "DESC";
+    query.orderBy("game.createdDate", "DESC");
   }
-  const options: FindManyOptions<Game> = {
-    relations: {
-      players: {
-        items: true,
-        hero: true,
-        player: true,
-      },
-    },
-    where,
-    order,
-    skip,
-    take,
-  };
-  const [games, count] = await gameRepository.findAndCount(options);
+  query.leftJoinAndSelect("game.players", "game_player");
+  query.leftJoinAndSelect("game_player.items", "item");
+  query.leftJoinAndSelect("game_player.hero", "hero");
+  query.leftJoinAndSelect("game_player.player", "player");
+  const [games, count] = await query.getManyAndCount();
   return res.json({ games, count });
 });
 
