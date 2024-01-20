@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from "react";
+import { Dayjs } from "dayjs";
 import { useState, useEffect, useMemo } from "react";
 import { Paper } from "@mui/material";
 import {
@@ -20,12 +21,16 @@ type PlayerTableProps = {
   selectedLadder: string;
   gameMode: string;
   heroSelectionMode: string;
+  startDate: Dayjs | null;
+  endDate: Dayjs | null;
 };
 
 export function PlayerTable({
   selectedLadder,
   gameMode,
   heroSelectionMode,
+  startDate,
+  endDate,
 }: PlayerTableProps) {
   // state variables
   const [players, setPlayers] = useState<Player[]>([]);
@@ -65,6 +70,10 @@ export function PlayerTable({
           { id: "ladder", value: selectedLadder },
           { id: "gameMode", value: gameMode },
           { id: "heroSelectionMode", value: heroSelectionMode },
+          {
+            id: "createdDate",
+            value: [startDate?.toISOString(), endDate?.toISOString()],
+          },
         ])
       );
       url.searchParams.set("search", globalFilter);
@@ -93,6 +102,8 @@ export function PlayerTable({
     selectedLadder, //re-fetch when selected ladder changes
     gameMode, //re-fetch when game mode changes
     heroSelectionMode, //re-fetch when hero selection mode changes
+    startDate, //re-fetch when start date changes
+    endDate, //re-fetch when end date changes
   ]);
 
   const columns = useMemo<MRT_ColumnDef<Player>[]>(

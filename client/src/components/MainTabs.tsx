@@ -1,4 +1,5 @@
 import React from "react";
+import { Dayjs } from "dayjs";
 import { Paper } from "@mui/material";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
@@ -15,6 +16,8 @@ type MainTabsProps = {
   onSelectedLadderChange: (selectedLadder: string) => void;
   gameMode: string;
   heroSelectionMode: string;
+  startDate: Dayjs | null;
+  endDate: Dayjs | null;
 };
 
 export function MainTabs({
@@ -24,6 +27,8 @@ export function MainTabs({
   onSelectedLadderChange,
   gameMode,
   heroSelectionMode,
+  startDate,
+  endDate,
 }: MainTabsProps) {
   const [tabIndex, setTabIndex] = useQueryState("tabIndex", defaultIndex);
 
@@ -45,6 +50,8 @@ export function MainTabs({
             onSelectedLadderChange={onSelectedLadderChange}
             gameMode={gameMode}
             heroSelectionMode={heroSelectionMode}
+            startDate={startDate}
+            endDate={endDate}
           />
         </TabPanel>
         <TabPanel>
@@ -52,6 +59,8 @@ export function MainTabs({
             selectedLadder={selectedLadder}
             gameMode={gameMode}
             heroSelectionMode={heroSelectionMode}
+            startDate={startDate}
+            endDate={endDate}
           />
         </TabPanel>
         <TabPanel>
@@ -59,6 +68,8 @@ export function MainTabs({
             selectedLadder={selectedLadder}
             gameMode={gameMode}
             heroSelectionMode={heroSelectionMode}
+            startDate={startDate}
+            endDate={endDate}
           />
         </TabPanel>
       </Tabs>

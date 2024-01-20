@@ -1,4 +1,5 @@
 import React from "react";
+import { Dayjs } from "dayjs";
 import {
   Box,
   Paper,
@@ -7,6 +8,7 @@ import {
   FormControl,
   InputLabel,
 } from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LadderList } from "./LadderList";
 import { ILaddersApiResponse as LaddersApiResponse } from "../../../shared/types";
 
@@ -19,6 +21,10 @@ type SideControlsProps = {
   onGameModeChange: (gameMode: string) => void;
   heroSelectionMode: string;
   onHeroSelectionModeChange: (heroSelectionMode: string) => void;
+  startDate: Dayjs | null;
+  onStartDateChange: (startDate: Dayjs | null) => void;
+  endDate: Dayjs | null;
+  onEndDateChange: (endDate: Dayjs | null) => void;
 };
 
 export function SideControls({
@@ -30,10 +36,17 @@ export function SideControls({
   onGameModeChange,
   heroSelectionMode,
   onHeroSelectionModeChange,
+  startDate,
+  onStartDateChange,
+  endDate,
+  onEndDateChange,
 }: SideControlsProps) {
   return (
-    <Paper>
+    <Paper sx={{ padding: 2 }}>
       <Box sx={{ direction: "column" }}>
+        <a href="/">
+          <img src="./images/logo.png" style={{ width: "100%" }} />
+        </a>
         <LadderList
           ladders={ladders}
           onLaddersChange={onLaddersChange}
@@ -76,6 +89,24 @@ export function SideControls({
             ))}
           </Select>
         </FormControl>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "row",
+            marginTop: 1,
+          }}
+        >
+          <DatePicker
+            label="Start date"
+            value={startDate}
+            onChange={(value) => onStartDateChange(value)}
+          />
+          <DatePicker
+            label="End date"
+            value={endDate}
+            onChange={onEndDateChange}
+          />
+        </Box>
       </Box>
     </Paper>
   );

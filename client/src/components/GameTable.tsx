@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from "react";
+import { Dayjs } from "dayjs";
 import { Fragment, useState, useEffect, useMemo } from "react";
 import { Box, Button, Paper, MenuItem, ListItemIcon } from "@mui/material";
 import { Add, Remove } from "@mui/icons-material";
@@ -29,6 +30,8 @@ type GameTableProps = {
   onSelectedLadderChange: (ladderName: string) => void;
   gameMode: string;
   heroSelectionMode: string;
+  startDate: Dayjs | null;
+  endDate: Dayjs | null;
 };
 
 export function GameTable({
@@ -37,6 +40,8 @@ export function GameTable({
   onSelectedLadderChange,
   gameMode,
   heroSelectionMode,
+  startDate,
+  endDate,
 }: GameTableProps) {
   // state variables
   const [games, setGames] = useState<Game[]>([]);
@@ -63,12 +68,15 @@ export function GameTable({
     setColumnFilters([
       ...columnFilters.filter(
         (filter) =>
-          filter.id !== "gameMode" && filter.id !== "heroSelectionMode"
+          filter.id !== "gameMode" &&
+          filter.id !== "heroSelectionMode" &&
+          filter.id !== "createdDate"
       ),
       { id: "gameMode", value: gameMode },
       { id: "heroSelectionMode", value: heroSelectionMode },
+      { id: "createdDate", value: [startDate, endDate] },
     ]);
-  }, [gameMode, heroSelectionMode]);
+  }, [gameMode, heroSelectionMode, startDate, endDate]);
 
   // update game list
   useEffect(() => {

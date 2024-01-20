@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import React from "react";
 import { useState } from "react";
+import { Dayjs } from "dayjs";
 import { Grid, Paper } from "@mui/material";
 import { SideControls } from "./components/SideControls";
 import { MainTabs } from "./components/MainTabs";
@@ -20,6 +21,16 @@ function App() {
     "heroSelectionMode",
     "ALL PICK"
   );
+  const [startDate, setStartDate] = useQueryState<Dayjs | null>(
+    "startDate",
+    null,
+    true
+  );
+  const [endDate, setEndDate] = useQueryState<Dayjs | null>(
+    "endDate",
+    null,
+    true
+  );
 
   return (
     <Paper id="container">
@@ -34,6 +45,10 @@ function App() {
             onGameModeChange={setGameMode}
             heroSelectionMode={heroSelectionMode}
             onHeroSelectionModeChange={setHeroSelectionMode}
+            startDate={startDate}
+            onStartDateChange={setStartDate}
+            endDate={endDate}
+            onEndDateChange={setEndDate}
           />
         </Grid>
         <Grid item xs={8} md={9}>
@@ -44,6 +59,8 @@ function App() {
             onSelectedLadderChange={setSelectedLadder}
             gameMode={gameMode}
             heroSelectionMode={heroSelectionMode}
+            startDate={startDate}
+            endDate={endDate}
           />
         </Grid>
       </Grid>

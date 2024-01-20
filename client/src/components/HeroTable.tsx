@@ -1,5 +1,6 @@
 /* eslint-disable react/prop-types */
 import React from "react";
+import { Dayjs } from "dayjs";
 import { useState, useEffect, useMemo } from "react";
 import { Paper, Avatar } from "@mui/material";
 import {
@@ -20,12 +21,16 @@ type HeroTableProps = {
   selectedLadder: string;
   gameMode: string;
   heroSelectionMode: string;
+  startDate: Dayjs | null;
+  endDate: Dayjs | null;
 };
 
 export function HeroTable({
   selectedLadder,
   gameMode,
   heroSelectionMode,
+  startDate,
+  endDate,
 }: HeroTableProps) {
   const [heroes, setHeroes] = useState<Hero[]>([]);
   const [isError, setIsError] = useState(false);
@@ -63,6 +68,10 @@ export function HeroTable({
           { id: "ladder", value: selectedLadder },
           { id: "gameMode", value: gameMode },
           { id: "heroSelectionMode", value: heroSelectionMode },
+          {
+            id: "createdDate",
+            value: [startDate?.toISOString(), endDate?.toISOString()],
+          },
         ])
       );
       url.searchParams.set("sorting", JSON.stringify(sorting));
@@ -90,6 +99,8 @@ export function HeroTable({
     selectedLadder, //re-fetch when selected ladder changes
     gameMode, //re-fetch when game mode changes
     heroSelectionMode, //re-fetch when hero selection mode changes
+    startDate, //re-fetch when start date changes
+    endDate, //re-fetch when end date changes
   ]);
 
   const columns = useMemo<MRT_ColumnDef<Hero>[]>(

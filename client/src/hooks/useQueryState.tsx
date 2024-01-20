@@ -1,19 +1,27 @@
 import { useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import dayjs from "dayjs";
 
 import qs from "qs";
 
-function valueToString<T>(value: T): string {
+function valueToString<T>(value: T, isDate: boolean): string {
+  if (isDate) {
+    return (value as dayjs.Dayjs)?.toISOString();
+  }
   return JSON.stringify(value);
 }
 
-function parseValue<T>(value: string): T {
+function parseValue<T>(value: string, isDate: boolean): T {
+  if (isDate) {
+    return dayjs(value) as T;
+  }
   return JSON.parse(value) as T;
 }
 
 export function useQueryState<T>(
   query: string,
-  defaultValue: T
+  defaultValue: T,
+  isDate = false
 ): [T, (updaterOrValue: T | ((old: T) => T)) => void] {
   const location = useLocation();
   const navigate = useNavigate();
@@ -25,7 +33,7 @@ export function useQueryState<T>(
       });
       const newQueries = {
         ...existingQueries,
-        [query]: valueToString(value),
+        [query]: valueToString(value, isDate),
       };
       const queryString = qs.stringify(newQueries, { skipNulls: true });
       navigate({ search: queryString });
@@ -37,7 +45,7 @@ export function useQueryState<T>(
     query
   ] as string;
   return [
-    ((parsedValue && parseValue(parsedValue)) as T) || defaultValue,
+    ((parsedValue && parseValue(parsedValue, isDate)) as T) || defaultValue,
     setQuery,
   ];
 }

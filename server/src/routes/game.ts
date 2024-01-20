@@ -111,7 +111,7 @@ router.get("/", async (req: Request, res: Response) => {
     !filterQueryFromRequest(req, {
       query,
       filterColumns: [
-        { name: "createdDate", type: "date", alias: "game.createdData" },
+        { name: "createdDate", type: "date", alias: "game.createdDate" },
         { name: "gameMode", type: "enum", alias: "game.gameMode" },
         {
           name: "heroSelectionMode",

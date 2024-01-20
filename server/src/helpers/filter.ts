@@ -70,6 +70,14 @@ export function filterQueryFromRequest<T extends ObjectLiteral>(
               .andWhere(`${filterColumn.alias} BETWEEN :start AND :end`)
               .setParameter("start", requestFilter.value[0])
               .setParameter("end", requestFilter.value[1]);
+          } else if (requestFilter.value[0]) {
+            query
+              .andWhere(`${filterColumn.alias} >= :start`)
+              .setParameter("start", requestFilter.value[0]);
+          } else if (requestFilter.value[1]) {
+            query
+              .andWhere(`${filterColumn.alias} <= :end`)
+              .setParameter("end", requestFilter.value[1]);
           }
           break;
         case "enum":
