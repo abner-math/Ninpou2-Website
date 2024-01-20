@@ -3,27 +3,19 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Grid, Paper } from "@mui/material";
-import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
-import "react-tabs/style/react-tabs.css";
-import { GameTable } from "./components/GameTable";
-import { LadderList } from "./components/LadderList";
 import {
   type MRT_ColumnFiltersState,
   type MRT_PaginationState,
   type MRT_SortingState,
 } from "material-react-table";
+import { SideControls } from "./components/SideControls";
+import {
+  MainTabs,
+  type GlobalPagination,
+  type GlobalSorting,
+} from "./components/MainTabs";
 import { ILaddersApiResponse as LaddersApiResponse } from "../../shared/types";
 import "./App.css";
-
-type GlobalPagination = {
-  games: MRT_PaginationState;
-  heroes: MRT_PaginationState;
-};
-
-type GlobalSorting = {
-  games: MRT_SortingState;
-  heroes: MRT_SortingState;
-};
 
 function App() {
   // navigation
@@ -34,6 +26,8 @@ function App() {
   // state variables
   const defaultFilters: MRT_ColumnFiltersState = [
     { id: "ladder", value: "public" },
+    { id: "gameMode", value: "POINT 45" },
+    { id: "heroSelectionMode", value: "" },
   ];
   const [filters, setFilters] = useState<MRT_ColumnFiltersState>(
     (queryParams.get("filters")
@@ -76,10 +70,29 @@ function App() {
   const ladderName =
     (filters.find((filter) => filter.id === "ladder")?.value as string) ||
     "public";
-  const setLadderName = (ladderName: string) => {
+  const setLadderName = (value: string) => {
     setFilters(
       filters.map((filter) =>
-        filter.id === "ladder" ? { ...filter, value: ladderName } : filter
+        filter.id === "ladder" ? { ...filter, value } : filter
+      )
+    );
+  };
+  const gameMode =
+    (filters.find((filter) => filter.id === "gameMode")?.value as string) || "";
+  const setGameMode = (value: string) => {
+    setFilters(
+      filters.map((filter) =>
+        filter.id === "gameMode" ? { ...filter, value } : filter
+      )
+    );
+  };
+  const heroSelectionMode =
+    (filters.find((filter) => filter.id === "heroSelectionMode")
+      ?.value as string) || "";
+  const setHeroSelectionMode = (value: string) => {
+    setFilters(
+      filters.map((filter) =>
+        filter.id === "heroSelectionMode" ? { ...filter, value } : filter
       )
     );
   };
@@ -106,45 +119,32 @@ function App() {
     <Paper id="container">
       <Grid container direction="row" justifyContent="space-between">
         <Grid item xs={4} md={3}>
-          <Paper>
-            <LadderList
-              ladders={ladders}
-              onLaddersChange={setLadders}
-              selectedLadderName={ladderName}
-              onSelectedLadderNameChange={setLadderName}
-              ladderSearchQuery={ladderSearchQuery}
-              onLadderSearch={setLadderSearchQuery}
-            />
-          </Paper>
+          <SideControls
+            ladders={ladders}
+            onLaddersChange={setLadders}
+            selectedLadderName={ladderName}
+            onSelectedLadderNameChange={setLadderName}
+            ladderSearchQuery={ladderSearchQuery}
+            onLadderSearch={setLadderSearchQuery}
+            gameMode={gameMode}
+            onGameModeChange={setGameMode}
+            heroSelectionMode={heroSelectionMode}
+            onHeroSelectionModeChange={setHeroSelectionMode}
+          />
         </Grid>
         <Grid item xs={8} md={9}>
-          <Paper>
-            <Tabs defaultIndex={0}>
-              <TabList>
-                <Tab>Games</Tab>
-                <Tab>Players</Tab>
-                <Tab>Heroes</Tab>
-              </TabList>
-              <TabPanel>
-                <Paper className="table">
-                  <GameTable
-                    ladders={ladders}
-                    onLaddersChange={setLadders}
-                    selectedLadderName={ladderName}
-                    onSelectedLadderNameChange={setLadderName}
-                    columnFilters={filters}
-                    onColumnFiltersChange={setFilters}
-                    pagination={pagination.games}
-                    onPaginationChange={setGamesPagination}
-                    sorting={sorting.games}
-                    onSortingChange={setGamesSorting}
-                  />
-                </Paper>
-              </TabPanel>
-              <TabPanel></TabPanel>
-              <TabPanel></TabPanel>
-            </Tabs>
-          </Paper>
+          <MainTabs
+            ladders={ladders}
+            onLaddersChange={setLadders}
+            selectedLadderName={ladderName}
+            onSelectedLadderNameChange={setLadderName}
+            columnFilters={filters}
+            onColumnFiltersChange={setFilters}
+            pagination={pagination}
+            onGamesPaginationChange={setGamesPagination}
+            sorting={sorting}
+            onGamesSortingChange={setGamesSorting}
+          />
         </Grid>
       </Grid>
     </Paper>

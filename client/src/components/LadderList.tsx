@@ -88,6 +88,7 @@ export function LadderList({
           variant="contained"
           color="success"
           onClick={handleClickOpenCreate}
+          fullWidth
         >
           Create Private Ladder
         </Button>
