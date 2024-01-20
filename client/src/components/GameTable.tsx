@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from "react";
 import { Fragment, useState, useEffect, useMemo } from "react";
-import { Box, Button, MenuItem, ListItemIcon } from "@mui/material";
+import { Box, Button, Paper, MenuItem, ListItemIcon } from "@mui/material";
 import { Add, Remove } from "@mui/icons-material";
 import {
   MaterialReactTable,
@@ -115,6 +115,7 @@ export function GameTable({
         accessorKey: "rankeable",
         header: "Rankeable",
         filterVariant: "checkbox",
+        size: 40,
         Cell: ({ cell }) => (
           <Box
             component="span"
@@ -145,6 +146,7 @@ export function GameTable({
         accessorFn: (row) => `${row.players.length} / 9`,
         id: "players",
         header: "Slots",
+        size: 40,
         enableSorting: false,
         enableColumnFilter: false,
       },
@@ -152,25 +154,36 @@ export function GameTable({
         accessorFn: (row) => row.gameMode.replace("_", " "),
         id: "gameMode",
         header: "Game Mode",
+        size: 40,
         enableSorting: false,
       },
       {
         accessorFn: (row) => row.heroSelectionMode.replace("_", " "),
         id: "heroSelectionMode",
         header: "Hero Selection",
+        size: 40,
         enableSorting: false,
       },
       {
         accessorFn: (row) => Math.ceil(row.durationSeconds / 60),
         id: "durationSeconds",
         header: "Duration (min)",
+        muiTableHeadCellProps: {
+          align: "right",
+        },
+        muiTableBodyCellProps: {
+          align: "right",
+        },
+        size: 40,
         enableSorting: true,
       },
       {
         accessorKey: "balance",
         id: "balance",
         header: "Balance Ladder",
-        enableSorting: true,
+        size: 80,
+        grow: false,
+        enableSorting: false,
       },
     ],
     []
@@ -225,7 +238,7 @@ export function GameTable({
     onSortingChange,
     rowCount,
     state: {
-      columnFilters,
+      columnFilters: columnFilters.filter((filter) => filter.id !== "ladder"),
       globalFilter,
       isLoading,
       pagination,
@@ -324,26 +337,28 @@ export function GameTable({
   };
 
   return (
-    <Fragment>
-      <AddGamesToLadderDialog
-        open={openAdd}
-        onOpenChanged={setOpenAdd}
-        gameIds={gameIds}
-        ladders={ladders}
-        onGamesAddedToLadder={(ladderName: string) => {
-          onSelectedLadderNameChange(ladderName);
-        }}
-      />
-      <RemoveGamesFromLadderDialog
-        open={openRemove}
-        onOpenChanged={setOpenRemove}
-        gameIds={gameIds}
-        ladderName={selectedLadderName}
-        onGamesRemovedFromLadder={(ladderName: string) => {
-          onSelectedLadderNameChange(ladderName);
-        }}
-      />
-      <MaterialReactTable table={table} />
-    </Fragment>
+    <Paper className="table">
+      <Fragment>
+        <AddGamesToLadderDialog
+          open={openAdd}
+          onOpenChanged={setOpenAdd}
+          gameIds={gameIds}
+          ladders={ladders}
+          onGamesAddedToLadder={(ladderName: string) => {
+            onSelectedLadderNameChange(ladderName);
+          }}
+        />
+        <RemoveGamesFromLadderDialog
+          open={openRemove}
+          onOpenChanged={setOpenRemove}
+          gameIds={gameIds}
+          ladderName={selectedLadderName}
+          onGamesRemovedFromLadder={(ladderName: string) => {
+            onSelectedLadderNameChange(ladderName);
+          }}
+        />
+        <MaterialReactTable table={table} />
+      </Fragment>
+    </Paper>
   );
 }

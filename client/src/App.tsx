@@ -24,10 +24,13 @@ function App() {
   const queryParams = new URLSearchParams(location.search);
 
   // state variables
+  const [tabIndex, setTabIndex] = useState(
+    queryParams.get("tabIndex") ? parseInt(queryParams.get("tabIndex")!) : 0
+  );
   const defaultFilters: MRT_ColumnFiltersState = [
     { id: "ladder", value: "public" },
     { id: "gameMode", value: "POINT 45" },
-    { id: "heroSelectionMode", value: "" },
+    { id: "heroSelectionMode", value: "ALL PICK" },
   ];
   const [filters, setFilters] = useState<MRT_ColumnFiltersState>(
     (queryParams.get("filters")
@@ -36,6 +39,7 @@ function App() {
   );
   const defaultPagination: GlobalPagination = {
     games: { pageIndex: 0, pageSize: 10 },
+    players: { pageIndex: 0, pageSize: 10 },
     heroes: { pageIndex: 0, pageSize: 10 },
   };
   const [pagination, setPagination] = useState<GlobalPagination>(
@@ -46,8 +50,11 @@ function App() {
   const [gamesPagination, setGamesPagination] = useState<MRT_PaginationState>(
     pagination.games
   );
+  const [playersPagination, setPlayersPagination] =
+    useState<MRT_PaginationState>(pagination.players);
   const defaultSorting: GlobalSorting = {
     games: [{ id: "createdDate", desc: true }],
+    players: [{ id: "score", desc: true }],
     heroes: [],
   };
   const [sorting, setSorting] = useState<GlobalSorting>(
@@ -58,6 +65,9 @@ function App() {
   const [gamesSorting, setGamesSorting] = useState<MRT_SortingState>(
     sorting.games
   );
+  const [playersSorting, setPlayersSorting] = useState<MRT_SortingState>(
+    sorting.players
+  );
   const [ladders, setLadders] = useState<LaddersApiResponse>({
     public: [],
     private: [],
@@ -65,46 +75,51 @@ function App() {
   const [ladderSearchQuery, setLadderSearchQuery] = useState(
     queryParams.get("ladderSearch") || ""
   );
+  const [playerSearchQuery, setPlayerSearchQuery] = useState(
+    queryParams.get("playerSearch") || ""
+  );
 
   // filter variables
   const ladderName =
     (filters.find((filter) => filter.id === "ladder")?.value as string) ||
     "public";
   const setLadderName = (value: string) => {
-    setFilters(
-      filters.map((filter) =>
-        filter.id === "ladder" ? { ...filter, value } : filter
-      )
-    );
+    setFilters([
+      ...filters.filter((filter) => filter.id !== "ladder"),
+      { id: "ladder", value },
+    ]);
   };
   const gameMode =
     (filters.find((filter) => filter.id === "gameMode")?.value as string) || "";
   const setGameMode = (value: string) => {
-    setFilters(
-      filters.map((filter) =>
-        filter.id === "gameMode" ? { ...filter, value } : filter
-      )
-    );
+    setFilters([
+      ...filters.filter((filter) => filter.id !== "gameMode"),
+      { id: "gameMode", value },
+    ]);
   };
   const heroSelectionMode =
     (filters.find((filter) => filter.id === "heroSelectionMode")
       ?.value as string) || "";
   const setHeroSelectionMode = (value: string) => {
-    setFilters(
-      filters.map((filter) =>
-        filter.id === "heroSelectionMode" ? { ...filter, value } : filter
-      )
-    );
+    setFilters([
+      ...filters.filter((filter) => filter.id !== "heroSelectionMode"),
+      { id: "heroSelectionMode", value },
+    ]);
   };
 
   // keep pagination and sorting in sync
   useEffect(() => {
-    setPagination({ ...pagination, games: gamesPagination });
-    setSorting({ ...sorting, games: gamesSorting });
-  }, [gamesPagination, gamesSorting]);
+    setPagination({
+      ...pagination,
+      games: gamesPagination,
+      players: playersPagination,
+    });
+    setSorting({ ...sorting, games: gamesSorting, players: playersSorting });
+  }, [gamesPagination, gamesSorting, playersPagination, playersSorting]);
 
   // update query params on filter change
   useEffect(() => {
+    queryParams.set("tabIndex", tabIndex.toString());
     queryParams.set(
       "filters",
       JSON.stringify(filters.filter((filter) => !!filter.value))
@@ -112,8 +127,16 @@ function App() {
     queryParams.set("pagination", JSON.stringify(pagination));
     queryParams.set("sorting", JSON.stringify(sorting));
     queryParams.set("ladderSearch", ladderSearchQuery);
+    queryParams.set("playerSearch", playerSearchQuery);
     navigate({ search: queryParams.toString() });
-  }, [filters, pagination, sorting, ladderSearchQuery]);
+  }, [
+    tabIndex,
+    filters,
+    pagination,
+    sorting,
+    ladderSearchQuery,
+    playerSearchQuery,
+  ]);
 
   return (
     <Paper id="container">
@@ -134,6 +157,8 @@ function App() {
         </Grid>
         <Grid item xs={8} md={9}>
           <MainTabs
+            tabIndex={tabIndex}
+            onTabIndexChange={setTabIndex}
             ladders={ladders}
             onLaddersChange={setLadders}
             selectedLadderName={ladderName}
@@ -141,9 +166,13 @@ function App() {
             columnFilters={filters}
             onColumnFiltersChange={setFilters}
             pagination={pagination}
-            onGamesPaginationChange={setGamesPagination}
             sorting={sorting}
+            playerSearchQuery={playerSearchQuery}
+            onPlayerSearch={setPlayerSearchQuery}
+            onGamesPaginationChange={setGamesPagination}
             onGamesSortingChange={setGamesSorting}
+            onPlayersPaginationChange={setPlayersPagination}
+            onPlayersSortingChange={setPlayersSorting}
           />
         </Grid>
       </Grid>

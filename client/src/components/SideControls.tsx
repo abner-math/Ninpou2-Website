@@ -46,7 +46,7 @@ export function SideControls({
           ladderSearchQuery={ladderSearchQuery}
           onLadderSearch={onLadderSearch}
         />
-        <FormControl fullWidth>
+        <FormControl fullWidth sx={{ marginTop: 1 }}>
           <InputLabel id="game-mode">Game Mode</InputLabel>
           <Select
             value={gameMode}
@@ -64,7 +64,7 @@ export function SideControls({
             )}
           </Select>
         </FormControl>
-        <FormControl fullWidth>
+        <FormControl fullWidth sx={{ marginTop: 1 }}>
           <InputLabel id="hero-selection-mode">Hero Selection Mode</InputLabel>
           <Select
             value={heroSelectionMode}
