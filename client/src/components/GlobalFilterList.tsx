@@ -13,6 +13,7 @@ import {
     type MRT_PaginationState,
     type MRT_SortingState,
 } from "material-react-table";
+import { ILaddersApiResponse as LaddersApiResponse } from "../shared/types";
 
 type GlobalPagination = {
     games: MRT_PaginationState;
@@ -48,6 +49,7 @@ export function GlobalFilterList() {
         (queryParams.get("sorting") ? JSON.parse(queryParams.get("sorting")!) : defaultSorting) as GlobalSorting
     );
     const [gamesSorting, setGamesSorting] = useState<MRT_SortingState>(sorting.games);
+    const [ladders, setLadders] = useState<LaddersApiResponse>({ public: [], private: [] });
     const [ladderSearchQuery, setLadderSearchQuery] = useState(queryParams.get("ladderSearch") || "");
 
     // filter variables
@@ -77,6 +79,8 @@ export function GlobalFilterList() {
                 <Grid item xs={4} md={3}>
                     <Paper>
                         <LadderList
+                            ladders={ladders}
+                            onLaddersChange={setLadders}
                             selectedLadderName={ladderName}
                             onSelectedLadderNameChange={setLadderName}
                             ladderSearchQuery={ladderSearchQuery}
@@ -94,6 +98,10 @@ export function GlobalFilterList() {
                             <TabPanel>
                                 <Paper className="table">
                                     <GameTable
+                                        ladders={ladders}
+                                        onLaddersChange={setLadders}
+                                        selectedLadderName={ladderName}
+                                        onSelectedLadderNameChange={setLadderName}
                                         columnFilters={filters}
                                         onColumnFiltersChange={setFilters}
                                         pagination={pagination.games}

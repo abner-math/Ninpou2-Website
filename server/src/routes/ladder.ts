@@ -41,7 +41,7 @@ router.post("/", ladderValidationRules, async (req: Request, res: Response) => {
     return res.status(400).json({
       errors: [
         {
-          msg: "Ladder already exists",
+          msg: "Ladder already exists.",
         },
       ],
     });
@@ -64,8 +64,8 @@ router.get("/", async (req: Request, res: Response) => {
     .orderBy("ladder.numGames", "DESC")
     .getMany();
   return res.json({
-    default: [{ name: "public", numGames }],
-    custom: ladders,
+    public: [{ name: "public", numGames }],
+    private: ladders,
   });
 });
 
@@ -82,7 +82,7 @@ router.use(
       return res.status(404).json({
         errors: [
           {
-            msg: "Ladder not found",
+            msg: "Ladder not found.",
           },
         ],
       });
@@ -93,7 +93,7 @@ router.use(
         errors: [
           {
             param: "passphrase",
-            msg: "Incorrect passphrase",
+            msg: "Incorrect passphrase.",
           },
         ],
       });
@@ -101,6 +101,12 @@ router.use(
     next();
   }
 );
+
+router.delete("/:ladder_name", async (req: Request, res: Response) => {
+  const ladder = req.ladder!;
+  await ladderRepository.remove(ladder);
+  res.status(200).json(ladder);
+});
 
 router.use(
   "/:ladder_name/games/:game_id",
@@ -115,7 +121,7 @@ router.use(
       return res.status(404).json({
         errors: [
           {
-            msg: "Game not found",
+            msg: "Game not found.",
           },
         ],
       });

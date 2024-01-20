@@ -56,4 +56,23 @@ interface IPlayer {
   players: IGamePlayer[];
 }
 
-export type { IGamePlayer, IGame, IHero, IItem, ILadder, IPlayer };
+interface IGamesApiResponse {
+  games: Array<IGame>;
+  count: number;
+}
+
+interface ILaddersApiResponse {
+  public: Array<ILadder>;
+  private: Array<ILadder>;
+}
+
+export type {
+  IGamePlayer,
+  IGame,
+  IHero,
+  IItem,
+  ILadder,
+  IPlayer,
+  IGamesApiResponse,
+  ILaddersApiResponse,
+};

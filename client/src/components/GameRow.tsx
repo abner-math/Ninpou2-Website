@@ -9,8 +9,8 @@ import {
     Paper,
     Avatar,
     styled,
-} from '@mui/material';
-import { tableCellClasses } from '@mui/material/TableCell';
+} from "@mui/material";
+import { tableCellClasses } from "@mui/material/TableCell";
 import type { IGame as Game } from "../shared/types";
 
 export function GameRow({ game }: { game: Game }) {

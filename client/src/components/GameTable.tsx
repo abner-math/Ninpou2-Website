@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { Fragment, useState, useEffect, useMemo } from "react";
 import {
     Box,
     Button,
@@ -18,14 +18,19 @@ import {
     MRT_ShowHideColumnsButton,
 } from "material-react-table";
 import { GameRow } from "./GameRow";
-import type { IGame as Game } from "../shared/types";
-
-type GamesApiResponse = {
-    games: Array<Game>;
-    count: number;
-};
+import { AddGamesToLadderDialog } from "./AddGamesToLadderDialog";
+import { RemoveGamesFromLadderDialog } from "./RemoveGamesFromLadderDialog";
+import type {
+    IGame as Game,
+    IGamesApiResponse as GamesApiResponse,
+    ILaddersApiResponse as LaddersApiResponse
+} from "../shared/types";
 
 type GamesTableProps = {
+    ladders: LaddersApiResponse;
+    onLaddersChange: (ladders: LaddersApiResponse) => void;
+    selectedLadderName: string;
+    onSelectedLadderNameChange: (ladderName: string) => void;
     columnFilters: MRT_ColumnFiltersState;
     onColumnFiltersChange: (updaterOrValue: MRT_ColumnFiltersState | ((old: MRT_ColumnFiltersState) => MRT_ColumnFiltersState)) => void;
     pagination: MRT_PaginationState;
@@ -34,13 +39,16 @@ type GamesTableProps = {
     onSortingChange: (updaterOrValue: MRT_SortingState | ((old: MRT_SortingState) => MRT_SortingState)) => void;
 };
 
-export function GameTable({ columnFilters, onColumnFiltersChange, pagination, onPaginationChange, sorting, onSortingChange }: GamesTableProps) {
+export function GameTable({ ladders, onLaddersChange, selectedLadderName, onSelectedLadderNameChange, columnFilters, onColumnFiltersChange, pagination, onPaginationChange, sorting, onSortingChange }: GamesTableProps) {
     const [games, setGames] = useState<Game[]>([]);
     const [isError, setIsError] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isRefetching, setIsRefetching] = useState(false);
     const [rowCount, setRowCount] = useState(0);
     const [globalFilter, setGlobalFilter] = useState("");
+    const [openAdd, setOpenAdd] = useState(false);
+    const [openRemove, setOpenRemove] = useState(false);
+    const [gameIds, setGameIds] = useState<number[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -50,12 +58,7 @@ export function GameTable({ columnFilters, onColumnFiltersChange, pagination, on
                 setIsRefetching(true);
             }
 
-            const url = new URL(
-                "/games",
-                process.env.NODE_ENV === "production"
-                    ? "https://www.material-react-table.com"
-                    : "http://localhost:8000",
-            );
+            const url = new URL("/games", "http://localhost:8000");
             url.searchParams.set(
                 "take",
                 `${pagination.pageSize}`,
@@ -212,14 +215,20 @@ export function GameTable({ columnFilters, onColumnFiltersChange, pagination, on
         renderDetailPanel: ({ row }) => (
             <GameRow game={row.original} />
         ),
-        renderRowActionMenuItems: ({ closeMenu }) => [
-            <MenuItem key={0} onClick={closeMenu} sx={{ m: 0 }}>
+        renderRowActionMenuItems: ({ closeMenu, row }) => [
+            <MenuItem key={0} onClick={() => {
+                handleClickOpen(true, row.original);
+                closeMenu();
+            }} sx={{ m: 0 }}>
                 <ListItemIcon>
                     <Add />
                 </ListItemIcon>
                 Add to Ladder
             </MenuItem>,
-            <MenuItem key={1} onClick={closeMenu} sx={{ m: 0 }}>
+            <MenuItem key={1} onClick={() => {
+                handleClickOpen(false, row.original);
+                closeMenu();
+            }} sx={{ m: 0 }}>
                 <ListItemIcon>
                     <Remove />
                 </ListItemIcon>
@@ -233,12 +242,6 @@ export function GameTable({ columnFilters, onColumnFiltersChange, pagination, on
                 });
             };
 
-            const handleAdd = () => {
-                table.getSelectedRowModel().flatRows.map((row) => {
-                    alert('activating ' + row.getValue('name'));
-                });
-            };
-
             return (
                 <Box sx={(theme) => ({
                     display: "flex",
@@ -247,11 +250,11 @@ export function GameTable({ columnFilters, onColumnFiltersChange, pagination, on
                     justifyContent: "space-between",
                 })}>
                     <Box sx={{ display: "flex", gap: "0.5rem" }}>
-                        <Button color="success" disabled={!table.getIsSomeRowsSelected()} onClick={handleAdd} variant="contained">
+                        <Button color="success" disabled={table.getSelectedRowModel().flatRows.length === 0} onClick={() => handleClickOpen(true)} variant="contained">
                             <Add />
                             Add to Ladder
                         </Button>
-                        <Button color="error" disabled={!table.getIsSomeRowsSelected()} onClick={handleRemove} variant="contained">
+                        <Button color="error" disabled={table.getSelectedRowModel().flatRows.length === 0 || selectedLadderName === "public"} onClick={() => handleClickOpen(false)} variant="contained">
                             <Remove />
                             Remove from Ladder
                         </Button>
@@ -266,5 +269,38 @@ export function GameTable({ columnFilters, onColumnFiltersChange, pagination, on
         },
     });
 
-    return <MaterialReactTable table={table} />;
+    const handleClickOpen = (add: boolean, game?: Game) => {
+        const ids = [];
+        if (game && game.rankeable) {
+            ids.push(game.id);
+        } else if (!game) {
+            ids.push(...table.getSelectedRowModel().flatRows.filter(row => row.original.rankeable).map((row) => row.original.id));
+        }
+        if (ids.length > 0) {
+            setGameIds(ids);
+            add ? setOpenAdd(true) : setOpenRemove(true);
+        }
+    };
+
+    return <Fragment>
+        <AddGamesToLadderDialog
+            open={openAdd}
+            onOpenChanged={setOpenAdd}
+            gameIds={gameIds}
+            ladders={ladders}
+            onGamesAddedToLadder={(ladderName: string, gameIds: number[]) => {
+                onSelectedLadderNameChange(ladderName);
+            }}
+        />
+        <RemoveGamesFromLadderDialog
+            open={openRemove}
+            onOpenChanged={setOpenRemove}
+            gameIds={gameIds}
+            ladderName={selectedLadderName}
+            onGamesRemovedFromLadder={(ladderName: string, gameIds: number[]) => {
+                onSelectedLadderNameChange(ladderName);
+            }}
+        />
+        <MaterialReactTable table={table} />
+    </Fragment>;
 }
