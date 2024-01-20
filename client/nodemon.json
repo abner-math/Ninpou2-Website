@@ -1,0 +1,7 @@
+{
+  "watch": [
+    "src"
+  ],
+  "ext": "ts",
+  "exec": "concurrently \"react-scripts start\" \"eslint . --ext .tsx\""
+}

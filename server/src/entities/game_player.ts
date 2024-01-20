@@ -16,8 +16,8 @@ import {
   Team,
   GameMode,
   HeroSelectionMode,
-} from "../shared/enums";
-import type { IGamePlayer } from "../shared/types";
+} from "../../../shared/enums";
+import type { IGamePlayer } from "../../../shared/types";
 
 @Entity()
 export class GamePlayer implements IGamePlayer {

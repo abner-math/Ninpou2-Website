@@ -5,7 +5,7 @@ import {
   HeroSelectionMode,
   PlayerState,
   Team,
-} from "../shared/enums";
+} from "../../../shared/enums";
 import { Game } from "../entities/game";
 import { AppDataSource } from "../db";
 

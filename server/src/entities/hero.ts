@@ -1,6 +1,6 @@
 import { Entity, PrimaryColumn, OneToMany } from "typeorm";
 import { GamePlayer } from "./game_player";
-import type { IHero } from "../shared/types";
+import type { IHero } from "../../../shared/types";
 
 @Entity()
 export class Hero implements IHero {

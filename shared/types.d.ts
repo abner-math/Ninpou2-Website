@@ -1,3 +1,5 @@
+import { GameMode, HeroSelectionMode, PlayerState, Team } from "./enums";
+
 interface IGamePlayer {
   id: number;
   createdDate: Date;
@@ -13,7 +15,7 @@ interface IGamePlayer {
   winner: boolean;
   rankeable: boolean;
   items: IItem[];
-  game: Game;
+  game: IGame;
   gameMode: GameMode;
   heroSelectionMode: HeroSelectionMode;
   ladderNames: string[];
@@ -24,7 +26,7 @@ interface IGame {
   createdDate: Date;
   players: IGamePlayer[];
   gameMode: GameMode;
-  heroSelectionMode: IHeroSelectionMode;
+  heroSelectionMode: HeroSelectionMode;
   durationSeconds: number;
   winnerTeam: Team;
   rankeable: boolean;

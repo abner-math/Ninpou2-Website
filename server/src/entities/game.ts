@@ -8,8 +8,8 @@ import {
 } from "typeorm";
 import { GamePlayer } from "./game_player";
 import { Ladder } from "./ladder";
-import { Team, GameMode, HeroSelectionMode } from "../shared/enums";
-import type { IGame } from "../shared/types";
+import { Team, GameMode, HeroSelectionMode } from "../../../shared/enums";
+import type { IGame } from "../../../shared/types";
 
 @Entity()
 export class Game implements IGame {
