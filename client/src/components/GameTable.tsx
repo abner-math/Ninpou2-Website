@@ -53,10 +53,12 @@ export function GameTable({
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
     []
   );
-  const [sorting, setSorting] = useState<MRT_SortingState>([]);
+  const [sorting, setSorting] = useState<MRT_SortingState>([
+    { id: "createdDate", desc: true },
+  ]);
   const [pagination, setPagination] = useState<MRT_PaginationState>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 25,
   });
   const [globalFilter, setGlobalFilter] = useState("");
   const [openAdd, setOpenAdd] = useState(false);
@@ -131,7 +133,7 @@ export function GameTable({
     () => [
       {
         accessorKey: "rankeable",
-        header: "Rankeable",
+        header: "Rankeable*",
         filterVariant: "checkbox",
         size: 40,
         Cell: ({ cell }) => (
@@ -377,6 +379,7 @@ export function GameTable({
             setRefreshGames(true);
           }}
         />
+        <p>*Only games without leavers can be ranked.</p>
         <MaterialReactTable table={table} />
       </Fragment>
     </Paper>

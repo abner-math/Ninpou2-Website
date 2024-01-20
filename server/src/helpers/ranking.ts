@@ -48,7 +48,6 @@ export async function getRanking(
     .andWhere("game_player.rankeable = true")
     .groupBy(groupBy);
   selects.forEach((select) => {
-    console.log(select);
     query.addSelect(select);
   });
   const filterColumns = [

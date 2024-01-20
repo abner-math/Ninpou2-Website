@@ -42,17 +42,11 @@ export function SideControls({
   onEndDateChange,
 }: SideControlsProps) {
   return (
-    <Paper sx={{ padding: 2 }}>
-      <Box sx={{ direction: "column" }}>
-        <a href="/">
-          <img src="./images/logo.png" style={{ width: "100%" }} />
-        </a>
-        <LadderList
-          ladders={ladders}
-          onLaddersChange={onLaddersChange}
-          selectedLadder={selectedLadder}
-          onSelectedLadderChange={onSelectedLadderChange}
-        />
+    <Paper sx={{ padding: 2, direction: "column" }}>
+      <a href="/">
+        <img src="./images/logo.png" style={{ width: "100%" }} />
+      </a>
+      <Paper elevation={2}>
         <FormControl fullWidth sx={{ marginTop: 1 }}>
           <InputLabel id="game-mode">Game Mode</InputLabel>
           <Select
@@ -94,6 +88,7 @@ export function SideControls({
             display: "flex",
             flexDirection: "row",
             marginTop: 1,
+            marginBottom: 1,
           }}
         >
           <DatePicker
@@ -107,7 +102,13 @@ export function SideControls({
             onChange={onEndDateChange}
           />
         </Box>
-      </Box>
+        <LadderList
+          ladders={ladders}
+          onLaddersChange={onLaddersChange}
+          selectedLadder={selectedLadder}
+          onSelectedLadderChange={onSelectedLadderChange}
+        />
+      </Paper>
     </Paper>
   );
 }

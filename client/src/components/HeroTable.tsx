@@ -40,7 +40,9 @@ export function HeroTable({
   const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
     []
   );
-  const [sorting, setSorting] = useState<MRT_SortingState>([]);
+  const [sorting, setSorting] = useState<MRT_SortingState>([
+    { id: "score", desc: true },
+  ]);
   const [pagination, setPagination] = useState<MRT_PaginationState>({
     pageIndex: 0,
     pageSize: 50,
@@ -107,7 +109,7 @@ export function HeroTable({
     () => [
       {
         accessorKey: "score",
-        header: "Score (%)",
+        header: "Score (%)*",
         muiTableHeadCellProps: {
           align: "right",
         },
@@ -275,6 +277,17 @@ export function HeroTable({
 
   return (
     <Paper className="table">
+      <p>
+        *Score is calculated using{" "}
+        <a
+          href="https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Binominal proportion confidence interval
+        </a>
+        .
+      </p>
       <MaterialReactTable table={table} />
     </Paper>
   );
