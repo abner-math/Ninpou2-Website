@@ -58,9 +58,7 @@ interface IPlayer {
   players: IGamePlayer[];
 }
 
-interface IPlayerWithScore {
-  player_steamId: string;
-  player_name: string;
+interface IRankingPosition {
   kills: number;
   deaths: number;
   assists: number;
@@ -68,8 +66,17 @@ interface IPlayerWithScore {
   wins: number;
   losses: number;
   games: number;
-  heroes: number;
   score: number;
+}
+
+interface IPlayerWithScore extends IRankingPosition {
+  player_steamId: string;
+  player_name: string;
+  heroes: number;
+}
+
+interface IHeroWithScore extends IRankingPosition {
+  heroName: string;
 }
 
 interface IGamesApiResponse {
@@ -87,6 +94,11 @@ interface IPlayersApiResponse {
   count: number;
 }
 
+interface IHeroesApiResponse {
+  heroes: Array<IHeroWithScore>;
+  count: number;
+}
+
 export type {
   IGamePlayer,
   IGame,
@@ -95,7 +107,9 @@ export type {
   ILadder,
   IPlayer,
   IPlayerWithScore,
+  IHeroWithScore,
   IGamesApiResponse,
   ILaddersApiResponse,
   IPlayersApiResponse,
+  IHeroesApiResponse,
 };

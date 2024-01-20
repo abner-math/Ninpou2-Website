@@ -6,6 +6,7 @@ import cors from "cors";
 import gameRoutes from "./routes/game";
 import ladderRoutes from "./routes/ladder";
 import playerRoutes from "./routes/player";
+import heroRoutes from "./routes/hero";
 import filters from "./helpers/filter";
 import { AppDataSource } from "./db";
 import * as path from "path";
@@ -29,6 +30,7 @@ app.use(filters);
 app.use("/games", gameRoutes);
 app.use("/ladders", ladderRoutes);
 app.use("/players", playerRoutes);
+app.use("/heroes", heroRoutes);
 
 app.listen(port, () => {
   console.log(`[server]: Server is running at http://localhost:${port}`);

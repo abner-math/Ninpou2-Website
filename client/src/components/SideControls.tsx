@@ -13,10 +13,8 @@ import { ILaddersApiResponse as LaddersApiResponse } from "../../../shared/types
 type SideControlsProps = {
   ladders: LaddersApiResponse;
   onLaddersChange: (ladders: LaddersApiResponse) => void;
-  selectedLadderName: string;
-  onSelectedLadderNameChange: (ladderName: string) => void;
-  ladderSearchQuery: string;
-  onLadderSearch: (ladderSearchQuery: string) => void;
+  selectedLadder: string;
+  onSelectedLadderChange: (ladder: string) => void;
   gameMode: string;
   onGameModeChange: (gameMode: string) => void;
   heroSelectionMode: string;
@@ -26,10 +24,8 @@ type SideControlsProps = {
 export function SideControls({
   ladders,
   onLaddersChange,
-  selectedLadderName,
-  onSelectedLadderNameChange,
-  ladderSearchQuery,
-  onLadderSearch,
+  selectedLadder,
+  onSelectedLadderChange,
   gameMode,
   onGameModeChange,
   heroSelectionMode,
@@ -41,10 +37,8 @@ export function SideControls({
         <LadderList
           ladders={ladders}
           onLaddersChange={onLaddersChange}
-          selectedLadderName={selectedLadderName}
-          onSelectedLadderNameChange={onSelectedLadderNameChange}
-          ladderSearchQuery={ladderSearchQuery}
-          onLadderSearch={onLadderSearch}
+          selectedLadder={selectedLadder}
+          onSelectedLadderChange={onSelectedLadderChange}
         />
         <FormControl fullWidth sx={{ marginTop: 1 }}>
           <InputLabel id="game-mode">Game Mode</InputLabel>

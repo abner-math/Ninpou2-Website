@@ -28,9 +28,9 @@ export function CreateLadderDialog({
     setErrorMessage("");
   };
   const handleNameChange = (name: string) => {
-    if (name.length < 3 || !name.match(/^[a-zA-Z0-9]+$/)) {
+    if (name.length < 3 || name.length > 20 || !name.match(/^[a-zA-Z0-9]+$/)) {
       setErrorMessage(
-        "Name must be at least three characters long and contain only letters and digits."
+        "Name must be at least 3 and 20 characters long and can only contain letters and digits."
       );
     } else {
       setErrorMessage("");

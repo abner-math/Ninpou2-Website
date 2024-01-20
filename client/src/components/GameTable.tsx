@@ -23,52 +23,54 @@ import type {
   ILaddersApiResponse as LaddersApiResponse,
 } from "../../../shared/types";
 
-type GamesTableProps = {
+type GameTableProps = {
   ladders: LaddersApiResponse;
-  onLaddersChange: (ladders: LaddersApiResponse) => void;
-  selectedLadderName: string;
-  onSelectedLadderNameChange: (ladderName: string) => void;
-  columnFilters: MRT_ColumnFiltersState;
-  onColumnFiltersChange: (
-    updaterOrValue:
-      | MRT_ColumnFiltersState
-      | ((old: MRT_ColumnFiltersState) => MRT_ColumnFiltersState)
-  ) => void;
-  pagination: MRT_PaginationState;
-  onPaginationChange: (
-    updaterOrValue:
-      | MRT_PaginationState
-      | ((old: MRT_PaginationState) => MRT_PaginationState)
-  ) => void;
-  sorting: MRT_SortingState;
-  onSortingChange: (
-    updaterOrValue:
-      | MRT_SortingState
-      | ((old: MRT_SortingState) => MRT_SortingState)
-  ) => void;
+  selectedLadder: string;
+  onSelectedLadderChange: (ladderName: string) => void;
+  gameMode: string;
+  heroSelectionMode: string;
 };
 
 export function GameTable({
   ladders,
-  selectedLadderName,
-  onSelectedLadderNameChange,
-  columnFilters,
-  onColumnFiltersChange,
-  pagination,
-  onPaginationChange,
-  sorting,
-  onSortingChange,
-}: GamesTableProps) {
+  selectedLadder,
+  onSelectedLadderChange,
+  gameMode,
+  heroSelectionMode,
+}: GameTableProps) {
+  // state variables
   const [games, setGames] = useState<Game[]>([]);
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefetching, setIsRefetching] = useState(false);
+  const [refreshGames, setRefreshGames] = useState(false);
   const [rowCount, setRowCount] = useState(0);
+  const [columnFilters, setColumnFilters] = useState<MRT_ColumnFiltersState>(
+    []
+  );
+  const [sorting, setSorting] = useState<MRT_SortingState>([]);
+  const [pagination, setPagination] = useState<MRT_PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
   const [globalFilter, setGlobalFilter] = useState("");
   const [openAdd, setOpenAdd] = useState(false);
   const [openRemove, setOpenRemove] = useState(false);
   const [gameIds, setGameIds] = useState<number[]>([]);
 
+  // keep filters in sync
+  useEffect(() => {
+    setColumnFilters([
+      ...columnFilters.filter(
+        (filter) =>
+          filter.id !== "gameMode" && filter.id !== "heroSelectionMode"
+      ),
+      { id: "gameMode", value: gameMode },
+      { id: "heroSelectionMode", value: heroSelectionMode },
+    ]);
+  }, [gameMode, heroSelectionMode]);
+
+  // update game list
   useEffect(() => {
     const fetchData = async () => {
       if (!games.length) {
@@ -83,8 +85,14 @@ export function GameTable({
         "skip",
         `${pagination.pageIndex * pagination.pageSize}`
       );
-      url.searchParams.set("filters", JSON.stringify(columnFilters ?? []));
-      url.searchParams.set("sorting", JSON.stringify(sorting ?? []));
+      url.searchParams.set(
+        "filters",
+        JSON.stringify([
+          ...columnFilters,
+          { id: "ladder", value: selectedLadder },
+        ])
+      );
+      url.searchParams.set("sorting", JSON.stringify(sorting));
 
       try {
         const response = await fetch(url.href);
@@ -99,14 +107,16 @@ export function GameTable({
       setIsError(false);
       setIsLoading(false);
       setIsRefetching(false);
+      setRefreshGames(false);
     };
     fetchData();
   }, [
-    columnFilters, //re-fetch when column filters change
+    columnFilters, //re-fetch when column filters changes
     globalFilter, //re-fetch when global filter changes
-    pagination.pageIndex, //re-fetch when page index changes
-    pagination.pageSize, //re-fetch when page size changes
-    sorting, //re-fetch when sorting changes
+    pagination, //re-fetch when page index changes
+    sorting, //re-fetch when sorting
+    selectedLadder, //re-fetch when selected ladder changes
+    refreshGames, //re-fetch when explicitly requested
   ]);
 
   const columns = useMemo<MRT_ColumnDef<Game>[]>(
@@ -232,13 +242,13 @@ export function GameTable({
           children: "Error loading data",
         }
       : undefined,
-    onColumnFiltersChange,
+    onColumnFiltersChange: setColumnFilters,
     onGlobalFilterChange: setGlobalFilter,
-    onPaginationChange,
-    onSortingChange,
+    onPaginationChange: setPagination,
+    onSortingChange: setSorting,
     rowCount,
     state: {
-      columnFilters: columnFilters.filter((filter) => filter.id !== "ladder"),
+      columnFilters,
       globalFilter,
       isLoading,
       pagination,
@@ -299,7 +309,7 @@ export function GameTable({
               color="error"
               disabled={
                 table.getSelectedRowModel().flatRows.length === 0 ||
-                selectedLadderName === "public"
+                selectedLadder === "public"
               }
               onClick={() => handleClickOpen(false)}
               variant="contained"
@@ -345,16 +355,18 @@ export function GameTable({
           gameIds={gameIds}
           ladders={ladders}
           onGamesAddedToLadder={(ladderName: string) => {
-            onSelectedLadderNameChange(ladderName);
+            onSelectedLadderChange(ladderName);
+            setRefreshGames(true);
           }}
         />
         <RemoveGamesFromLadderDialog
           open={openRemove}
           onOpenChanged={setOpenRemove}
           gameIds={gameIds}
-          ladderName={selectedLadderName}
+          ladderName={selectedLadder}
           onGamesRemovedFromLadder={(ladderName: string) => {
-            onSelectedLadderNameChange(ladderName);
+            onSelectedLadderChange(ladderName);
+            setRefreshGames(true);
           }}
         />
         <MaterialReactTable table={table} />

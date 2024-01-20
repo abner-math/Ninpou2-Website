@@ -4,13 +4,13 @@ import { getRanking } from "../helpers/ranking";
 const router = Router();
 
 router.get("/", async (req: Request, res: Response) => {
-  const [players, count] = await getRanking(
+  const [heroes, count] = await getRanking(
     req,
-    "player.steamId",
-    ["player.steamId", "player.name"],
-    '("player"."steamId"::text LIKE :search OR "player"."name" LIKE :search)'
+    "game_player.heroName",
+    ["game_player.heroName"],
+    '"game_player"."heroName" LIKE :search'
   );
-  return res.json({ players, count });
+  return res.json({ heroes, count });
 });
 
 export default router;

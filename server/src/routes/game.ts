@@ -7,6 +7,7 @@ import {
   Team,
 } from "../../../shared/enums";
 import { Game } from "../entities/game";
+import { filterQueryFromRequest } from "../helpers/filter";
 import { AppDataSource } from "../db";
 
 const router = Router();
@@ -107,7 +108,7 @@ router.get("/", async (req: Request, res: Response) => {
   query.leftJoinAndSelect("game_player.hero", "hero");
   query.leftJoinAndSelect("game_player.player", "player");
   if (
-    !req.getQueryFilter({
+    !filterQueryFromRequest(req, {
       query,
       filterColumns: [
         { name: "createdDate", type: "date", alias: "game.createdData" },

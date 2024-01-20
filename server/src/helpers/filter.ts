@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, Request } from "express";
 import { SelectQueryBuilder, ObjectLiteral } from "typeorm";
 import { Game } from "../entities/game";
 import { Ladder } from "../entities/ladder";
@@ -14,11 +14,6 @@ declare global {
         defaultValue?: string
       ) => string | undefined;
       getQueryInt: (key: string, defaultValue?: number) => number | undefined;
-      getQueryFilter: <T extends ObjectLiteral>(options: {
-        query: SelectQueryBuilder<T>;
-        filterColumns: { name: string; type: string; alias: string }[];
-        sortColumns: { name: string; alias: string }[];
-      }) => boolean;
     }
   }
 }
@@ -47,77 +42,78 @@ router.use((req, res, next) => {
       defaultValue
     );
   };
-  req.getQueryFilter = <T extends ObjectLiteral>(options: {
+  next();
+});
+
+export function filterQueryFromRequest<T extends ObjectLiteral>(
+  req: Request,
+  options: {
     query: SelectQueryBuilder<T>;
     filterColumns: { name: string; type: string; alias: string }[];
     sortColumns: { name: string; alias: string }[];
-  }) => {
-    const { query, filterColumns, sortColumns } = options;
-    const filters =
-      (req.query.filters && JSON.parse(req.query.filters as string)) || [];
-    const sorting =
-      (req.query.sorting && JSON.parse(req.query.sorting as string)) || [];
-    for (const requestFilter of filters) {
-      for (const filterColumn of filterColumns) {
-        if (requestFilter.id !== filterColumn.name || !requestFilter.value) {
-          continue;
-        }
-        switch (filterColumn.type) {
-          case "date":
-            if (requestFilter.value[0] && requestFilter.value[1]) {
-              query
-                .andWhere(`${filterColumn.alias} BETWEEN :start AND :end`)
-                .setParameter("start", requestFilter.value[0])
-                .setParameter("end", requestFilter.value[1]);
-            }
-            break;
-          case "enum":
+  }
+) {
+  const { query, filterColumns, sortColumns } = options;
+  const filters =
+    (req.query.filters && JSON.parse(req.query.filters as string)) || [];
+  const sorting =
+    (req.query.sorting && JSON.parse(req.query.sorting as string)) || [];
+  for (const requestFilter of filters) {
+    for (const filterColumn of filterColumns) {
+      if (requestFilter.id !== filterColumn.name || !requestFilter.value) {
+        continue;
+      }
+      switch (filterColumn.type) {
+        case "date":
+          if (requestFilter.value[0] && requestFilter.value[1]) {
             query
-              .andWhere(`${filterColumn.alias} LIKE :${requestFilter.id}`)
-              .setParameter(
-                requestFilter.id,
-                `%${requestFilter.value.replace(" ", "_").toUpperCase()}%`
-              );
-            break;
-          case "boolean":
-            query
-              .andWhere(`${filterColumn.alias} = :${requestFilter.id}`)
-              .setParameter(requestFilter.id, requestFilter.value === "true");
-            break;
-          case "string":
-            query
-              .andWhere(`${filterColumn.alias} LIKE :${requestFilter.id}`)
-              .setParameter(requestFilter.id, `%${requestFilter.value}%`);
-            break;
-          case "array":
-            if (
-              requestFilter.id === "ladder" &&
-              requestFilter.value === "public"
-            ) {
-              continue;
-            }
-            query
-              .andWhere(`${filterColumn.alias} @> ARRAY[:${requestFilter.id}]`)
-              .setParameter(
-                requestFilter.id,
-                requestFilter.value.toLowerCase()
-              );
-            break;
-        }
+              .andWhere(`${filterColumn.alias} BETWEEN :start AND :end`)
+              .setParameter("start", requestFilter.value[0])
+              .setParameter("end", requestFilter.value[1]);
+          }
+          break;
+        case "enum":
+          query
+            .andWhere(`${filterColumn.alias} LIKE :${requestFilter.id}`)
+            .setParameter(
+              requestFilter.id,
+              `%${requestFilter.value.replace(" ", "_").toUpperCase()}%`
+            );
+          break;
+        case "boolean":
+          query
+            .andWhere(`${filterColumn.alias} = :${requestFilter.id}`)
+            .setParameter(requestFilter.id, requestFilter.value === "true");
+          break;
+        case "string":
+          query
+            .andWhere(`${filterColumn.alias} LIKE :${requestFilter.id}`)
+            .setParameter(requestFilter.id, `%${requestFilter.value}%`);
+          break;
+        case "array":
+          if (
+            requestFilter.id === "ladder" &&
+            requestFilter.value === "public"
+          ) {
+            continue;
+          }
+          query
+            .andWhere(`${filterColumn.alias} @> ARRAY[:${requestFilter.id}]`)
+            .setParameter(requestFilter.id, requestFilter.value.toLowerCase());
+          break;
       }
     }
-    let hasSorting = false;
-    for (const sort of sorting) {
-      for (const sortColumn of sortColumns) {
-        if (sort.id === sortColumn.name) {
-          query.orderBy(sortColumn.alias, sort.desc ? "DESC" : "ASC");
-          hasSorting = true;
-        }
+  }
+  let hasSorting = false;
+  for (const sort of sorting) {
+    for (const sortColumn of sortColumns) {
+      if (sort.id === sortColumn.name) {
+        query.orderBy(sortColumn.alias, sort.desc ? "DESC" : "ASC");
+        hasSorting = true;
       }
     }
-    return hasSorting;
-  };
-  next();
-});
+  }
+  return hasSorting;
+}
 
 export default router;

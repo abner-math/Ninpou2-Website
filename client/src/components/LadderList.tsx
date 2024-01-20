@@ -14,34 +14,33 @@ import {
 import { Delete } from "@mui/icons-material";
 import { CreateLadderDialog } from "./CreateLadderDialog";
 import { DeleteLadderDialog } from "./DeleteLadderDialog";
+import { useQueryState } from "../hooks/useQueryState";
 import { ILaddersApiResponse as LaddersApiResponse } from "../../../shared/types";
 
 type LadderListProps = {
   ladders: LaddersApiResponse;
   onLaddersChange: (ladders: LaddersApiResponse) => void;
-  selectedLadderName: string;
-  onSelectedLadderNameChange: (ladderName: string) => void;
-  ladderSearchQuery: string;
-  onLadderSearch: (ladderSearchQuery: string) => void;
+  selectedLadder: string;
+  onSelectedLadderChange: (ladder: string) => void;
 };
 
 export function LadderList({
   ladders,
   onLaddersChange,
-  selectedLadderName,
-  onSelectedLadderNameChange,
-  ladderSearchQuery,
-  onLadderSearch,
+  selectedLadder,
+  onSelectedLadderChange,
 }: LadderListProps) {
+  // state variables
   const [openCreate, setOpenCreate] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [deletedLadderName, setDeletedLadderName] = useState("");
+  const [search, setSearch] = useQueryState("ladderSearch", "");
 
   // update ladder list
   useEffect(() => {
     const fetchData = async () => {
       const url = new URL("/ladders", "http://localhost:8000");
-      url.searchParams.set("search", ladderSearchQuery);
+      url.searchParams.set("search", search);
       try {
         const response = await fetch(url.href);
         const json = (await response.json()) as LaddersApiResponse;
@@ -52,7 +51,7 @@ export function LadderList({
       }
     };
     fetchData();
-  }, [ladderSearchQuery, selectedLadderName]);
+  }, [search]);
 
   // handle functions
   const handleClickOpenCreate = () => {
@@ -68,7 +67,7 @@ export function LadderList({
       <CreateLadderDialog
         open={openCreate}
         onOpenChanged={setOpenCreate}
-        onLadderCreated={onLadderSearch}
+        onLadderCreated={setSearch}
       />
       <DeleteLadderDialog
         ladderName={deletedLadderName}
@@ -97,8 +96,8 @@ export function LadderList({
           {ladders.public.map((ladder) => (
             <ListItemButton
               key={ladder.name}
-              selected={selectedLadderName === ladder.name}
-              onClick={() => onSelectedLadderNameChange(ladder.name)}
+              selected={selectedLadder === ladder.name}
+              onClick={() => onSelectedLadderChange(ladder.name)}
             >
               <ListItemText
                 primary={ladder.name}
@@ -122,9 +121,9 @@ export function LadderList({
                 id="ladder-search-bar"
                 className="text"
                 onChange={(e) => {
-                  onLadderSearch(e.target.value);
+                  setSearch(e.target.value);
                 }}
-                value={ladderSearchQuery}
+                value={search}
                 variant="outlined"
                 placeholder="Search..."
                 size="small"
@@ -135,8 +134,8 @@ export function LadderList({
           {ladders.private.map((ladder) => (
             <ListItemButton
               key={ladder.name}
-              selected={selectedLadderName === ladder.name}
-              onClick={() => onSelectedLadderNameChange(ladder.name)}
+              selected={selectedLadder === ladder.name}
+              onClick={() => onSelectedLadderChange(ladder.name)}
             >
               <ListItemText
                 primary={ladder.name}

@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from "react";
 import { useState, useEffect, useMemo } from "react";
-import { Paper } from "@mui/material";
+import { Paper, Avatar } from "@mui/material";
 import {
   MaterialReactTable,
   useMaterialReactTable,
@@ -12,23 +12,22 @@ import {
 } from "material-react-table";
 import { useQueryState } from "../hooks/useQueryState";
 import type {
-  IPlayerWithScore as Player,
-  IPlayersApiResponse as PlayersApiResponse,
+  IHeroWithScore as Hero,
+  IHeroesApiResponse as HeroesApiResponse,
 } from "../../../shared/types";
 
-type PlayerTableProps = {
+type HeroTableProps = {
   selectedLadder: string;
   gameMode: string;
   heroSelectionMode: string;
 };
 
-export function PlayerTable({
+export function HeroTable({
   selectedLadder,
   gameMode,
   heroSelectionMode,
-}: PlayerTableProps) {
-  // state variables
-  const [players, setPlayers] = useState<Player[]>([]);
+}: HeroTableProps) {
+  const [heroes, setHeroes] = useState<Hero[]>([]);
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefetching, setIsRefetching] = useState(false);
@@ -39,20 +38,19 @@ export function PlayerTable({
   const [sorting, setSorting] = useState<MRT_SortingState>([]);
   const [pagination, setPagination] = useState<MRT_PaginationState>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 50,
   });
-  const [globalFilter, setGlobalFilter] = useQueryState("playerSearch", "");
+  const [globalFilter, setGlobalFilter] = useQueryState("heroSearch", "");
 
-  // update player list
   useEffect(() => {
     const fetchData = async () => {
-      if (!players.length) {
+      if (!heroes.length) {
         setIsLoading(true);
       } else {
         setIsRefetching(true);
       }
 
-      const url = new URL("/players", "http://localhost:8000");
+      const url = new URL("/heroes", "http://localhost:8000");
       url.searchParams.set("take", `${pagination.pageSize}`);
       url.searchParams.set(
         "skip",
@@ -67,13 +65,12 @@ export function PlayerTable({
           { id: "heroSelectionMode", value: heroSelectionMode },
         ])
       );
-      url.searchParams.set("search", globalFilter);
       url.searchParams.set("sorting", JSON.stringify(sorting));
 
       try {
         const response = await fetch(url.href);
-        const json = (await response.json()) as PlayersApiResponse;
-        setPlayers(json.players);
+        const json = (await response.json()) as HeroesApiResponse;
+        setHeroes(json.heroes);
         setRowCount(json.count);
       } catch (error) {
         setIsError(true);
@@ -95,7 +92,7 @@ export function PlayerTable({
     heroSelectionMode, //re-fetch when hero selection mode changes
   ]);
 
-  const columns = useMemo<MRT_ColumnDef<Player>[]>(
+  const columns = useMemo<MRT_ColumnDef<Hero>[]>(
     () => [
       {
         accessorKey: "score",
@@ -112,20 +109,24 @@ export function PlayerTable({
         Cell: ({ cell }) => cell.getValue<number>()?.toFixed(2),
       },
       {
-        accessorKey: "player_steamId",
-        header: "Steam Id",
+        accessorKey: "heroName",
+        header: "Hero",
         size: 40,
-        grow: true,
-        enableSorting: false,
-        enableClickToCopy: true,
-      },
-      {
-        accessorKey: "player_name",
-        header: "Name",
-        size: 100,
         grow: false,
         enableSorting: false,
         enableClickToCopy: true,
+        Cell: ({ cell }) => (
+          <Avatar
+            variant="square"
+            alt={
+              cell.getValue<string>().charAt(0).toUpperCase() +
+              cell.getValue<string>().slice(1)
+            }
+            src={
+              "/images/heroes/npc_dota_hero_" + cell.getValue<string>() + ".png"
+            }
+          />
+        ),
       },
       {
         accessorKey: "kills",
@@ -199,27 +200,13 @@ export function PlayerTable({
         Cell: ({ cell }) =>
           `${cell.row.original.wins} / ${cell.row.original.wins + cell.row.original.losses} (${(cell.row.original.wins / (cell.row.original.wins + cell.row.original.losses)).toFixed(2)}%)`,
       },
-      {
-        accessorKey: "heroes",
-        header: "Heroes Played",
-        muiTableHeadCellProps: {
-          align: "right",
-        },
-        muiTableBodyCellProps: {
-          align: "right",
-        },
-        size: 40,
-        grow: true,
-        enableSorting: true,
-        enableColumnFilter: false,
-      },
     ],
     []
   );
 
   const table = useMaterialReactTable({
     columns,
-    data: players,
+    data: heroes,
     muiTablePaperProps: {
       elevation: 0,
       sx: {
@@ -246,7 +233,7 @@ export function PlayerTable({
     }),
     enableRowSelection: false,
     enableGlobalFilter: true,
-    getRowId: (row) => row.player_steamId,
+    getRowId: (row) => row.heroName,
     initialState: { showColumnFilters: false, density: "compact" },
     manualFiltering: false,
     manualPagination: true,
@@ -265,7 +252,7 @@ export function PlayerTable({
     onSortingChange: setSorting,
     rowCount,
     state: {
-      columnFilters: columnFilters,
+      columnFilters,
       globalFilter,
       isLoading,
       pagination,
