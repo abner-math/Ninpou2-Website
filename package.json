@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "scripts": {
     "build": "cd client && npm install && npm run build && cd .. && npx tsc",
-    "dev": "nodemon src/index.ts",
+    "dev": "nodemon server/index.ts",
     "start": "node dist/server/index.js --env=production",
     "lint": "eslint . --ext .ts",
     "deploy": "git push heroku main"

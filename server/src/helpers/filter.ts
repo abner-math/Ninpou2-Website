@@ -52,12 +52,13 @@ export function filterQueryFromRequest<T extends ObjectLiteral>(
     filterColumns: { name: string; type: string; alias: string }[];
     sortColumns: { name: string; alias: string }[];
   }
-) {
+): [boolean, boolean] {
   const { query, filterColumns, sortColumns } = options;
   const filters =
     (req.query.filters && JSON.parse(req.query.filters as string)) || [];
   const sorting =
     (req.query.sorting && JSON.parse(req.query.sorting as string)) || [];
+  let isPublicLadder = false;
   for (const requestFilter of filters) {
     for (const filterColumn of filterColumns) {
       if (requestFilter.id !== filterColumn.name || !requestFilter.value) {
@@ -103,6 +104,7 @@ export function filterQueryFromRequest<T extends ObjectLiteral>(
             requestFilter.id === "ladder" &&
             requestFilter.value === "public"
           ) {
+            isPublicLadder = true;
             continue;
           }
           query
@@ -121,7 +123,7 @@ export function filterQueryFromRequest<T extends ObjectLiteral>(
       }
     }
   }
-  return hasSorting;
+  return [hasSorting, isPublicLadder];
 }
 
 export default router;

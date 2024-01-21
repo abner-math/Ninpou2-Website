@@ -138,7 +138,7 @@ export function GameTable({
     () => [
       {
         accessorKey: "rankeable",
-        header: "Rankeable*",
+        header: "Ranked*",
         filterVariant: "checkbox",
         size: 40,
         Cell: ({ cell }) => (
@@ -241,7 +241,7 @@ export function GameTable({
       baseBackgroundColor: "rgba(0, 0, 0, 0)",
       draggingBorderColor: theme.palette.secondary.main,
     }),
-    enableRowSelection: (row) => row.getValue<boolean>("rankeable"),
+    enableRowSelection: true,
     enableGlobalFilter: false,
     enableRowActions: true,
     enableExpanding: true,
@@ -344,15 +344,12 @@ export function GameTable({
   });
 
   const handleClickOpen = (add: boolean, game?: Game) => {
-    const ids = [];
-    if (game && game.rankeable) {
+    const ids: number[] = [];
+    if (game) {
       ids.push(game.id);
     } else if (!game) {
       ids.push(
-        ...table
-          .getSelectedRowModel()
-          .flatRows.filter((row) => row.original.rankeable)
-          .map((row) => row.original.id)
+        ...table.getSelectedRowModel().flatRows.map((row) => row.original.id)
       );
     }
     if (ids.length > 0) {
@@ -384,7 +381,12 @@ export function GameTable({
             setRefreshGames(true);
           }}
         />
-        <p>*Only games without leavers can be ranked.</p>
+        {(!selectedLadder || selectedLadder === "public") && (
+          <p>
+            *Only full house games without leavers are ranked in the public
+            ladder.
+          </p>
+        )}
         <MaterialReactTable table={table} />
       </Fragment>
     </Paper>

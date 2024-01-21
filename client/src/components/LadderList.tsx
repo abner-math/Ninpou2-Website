@@ -15,7 +15,10 @@ import { Delete } from "@mui/icons-material";
 import { CreateLadderDialog } from "./CreateLadderDialog";
 import { DeleteLadderDialog } from "./DeleteLadderDialog";
 import { useQueryState } from "../hooks/useQueryState";
-import { ILaddersApiResponse as LaddersApiResponse } from "../../../shared/types";
+import {
+  ILadder as Ladder,
+  ILaddersApiResponse as LaddersApiResponse,
+} from "../../../shared/types";
 
 type LadderListProps = {
   ladders: LaddersApiResponse;
@@ -72,7 +75,16 @@ export function LadderList({
       <CreateLadderDialog
         open={openCreate}
         onOpenChanged={setOpenCreate}
-        onLadderCreated={setSearch}
+        onLadderCreated={(ladderName: string) => {
+          onLaddersChange({
+            ...ladders,
+            private: [
+              ...ladders.private,
+              { name: ladderName, numGames: 0 } as Ladder,
+            ],
+          });
+          onSelectedLadderChange(ladderName);
+        }}
       />
       <DeleteLadderDialog
         ladderName={deletedLadderName}
@@ -85,6 +97,9 @@ export function LadderList({
               (ladder) => ladder.name !== deletedLadderName
             ),
           });
+          if (selectedLadder === deletedLadderName) {
+            onSelectedLadderChange("public");
+          }
         }}
       />
       <Box>

@@ -43,9 +43,11 @@ export function SideControls({
 }: SideControlsProps) {
   return (
     <Paper sx={{ padding: 2, direction: "column" }}>
-      <a href="/">
-        <img src="./images/logo.png" style={{ width: "100%" }} />
-      </a>
+      <center>
+        <a href="/">
+          <img src="./images/logo.png" style={{ width: "80%" }} />
+        </a>
+      </center>
       <Paper elevation={2}>
         <FormControl fullWidth sx={{ marginTop: 1 }}>
           <InputLabel id="game-mode">Game Mode</InputLabel>

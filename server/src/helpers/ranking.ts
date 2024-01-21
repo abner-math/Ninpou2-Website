@@ -45,7 +45,6 @@ export async function getRanking(
       "score"
     )
     .leftJoin("game_player.player", "player")
-    .andWhere("game_player.rankeable = true")
     .groupBy(groupBy);
   selects.forEach((select) => {
     query.addSelect(select);
@@ -71,22 +70,25 @@ export async function getRanking(
     { name: "heroes", alias: "heroes" },
     { name: "score", alias: "score" },
   ];
-  if (
-    !filterQueryFromRequest(req, {
-      query,
-      filterColumns,
-      sortColumns,
-    })
-  ) {
+  const [hasSorting, isPublicLadder] = filterQueryFromRequest(req, {
+    query,
+    filterColumns,
+    sortColumns,
+  });
+  if (!hasSorting) {
     query.orderBy("score", "DESC"); // wilson score
+  }
+  if (isPublicLadder) {
+    query.andWhere("game_player.rankeable = true");
   }
   query.limit(req.getQueryInt("take", 10));
   query.offset(req.getQueryInt("skip", 0));
-  if (req.query.search) {
-    query.andWhere(queryString, {
-      search: `%${req.query.search}%`,
-    });
-  }
+  if (req.query.filter)
+    if (req.query.search) {
+      query.andWhere(queryString, {
+        search: `%${req.query.search}%`,
+      });
+    }
   const data = await query.getRawMany();
   const countQuery = playerRepository
     .createQueryBuilder("game_player")

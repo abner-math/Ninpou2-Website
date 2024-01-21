@@ -3,5 +3,5 @@
     "src"
   ],
   "ext": "ts",
-  "exec": "concurrently \"npx tsc --watch\" \"ts-node src/index.ts\" \"eslint . --ext .ts\""
+  "exec": "concurrently \"npx tsc --watch\" \"ts-node server/index.ts\" \"eslint . --ext .ts\""
 }

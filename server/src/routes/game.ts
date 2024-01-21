@@ -107,34 +107,38 @@ router.get("/", async (req: Request, res: Response) => {
   query.leftJoinAndSelect("game_player.items", "item");
   query.leftJoinAndSelect("game_player.hero", "hero");
   query.leftJoinAndSelect("game_player.player", "player");
-  if (
-    !filterQueryFromRequest(req, {
-      query,
-      filterColumns: [
-        { name: "createdDate", type: "date", alias: "game.createdDate" },
-        { name: "gameMode", type: "enum", alias: "game.gameMode" },
-        {
-          name: "heroSelectionMode",
-          type: "enum",
-          alias: "game.heroSelectionMode",
-        },
-        { name: "rankeable", type: "boolean", alias: "game.rankeable" },
-        { name: "balance", type: "string", alias: "game.balance" },
-        { name: "ladder", type: "array", alias: "game.ladderNames" },
-      ],
-      sortColumns: [
-        { name: "createdDate", alias: "game.createdDate" },
-        { name: "durationSeconds", alias: "game.durationSeconds" },
-        { name: "rankeable", alias: "game.rankeable" },
-        { name: "balance", alias: "game.balance" },
-      ],
-    })
-  ) {
+  const [hasSorting, isPublicLadder] = filterQueryFromRequest(req, {
+    query,
+    filterColumns: [
+      { name: "createdDate", type: "date", alias: "game.createdDate" },
+      { name: "gameMode", type: "enum", alias: "game.gameMode" },
+      {
+        name: "heroSelectionMode",
+        type: "enum",
+        alias: "game.heroSelectionMode",
+      },
+      { name: "rankeable", type: "boolean", alias: "game.rankeable" },
+      { name: "balance", type: "string", alias: "game.balance" },
+      { name: "ladder", type: "array", alias: "game.ladderNames" },
+    ],
+    sortColumns: [
+      { name: "createdDate", alias: "game.createdDate" },
+      { name: "durationSeconds", alias: "game.durationSeconds" },
+      { name: "rankeable", alias: "game.rankeable" },
+      { name: "balance", alias: "game.balance" },
+    ],
+  });
+  if (!hasSorting) {
     query.orderBy("game.createdDate", "DESC");
   }
   query.take(req.getQueryInt("take", 10));
   query.skip(req.getQueryInt("skip", 0));
   const [games, count] = await query.getManyAndCount();
+  if (!isPublicLadder) {
+    for (const game of games) {
+      game.rankeable = true;
+    }
+  }
   return res.json({ games, count });
 });
 

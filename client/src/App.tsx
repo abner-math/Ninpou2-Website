@@ -16,10 +16,10 @@ function App() {
     private: [],
   });
   const [selectedLadder, setSelectedLadder] = useQueryState("ladder", "public");
-  const [gameMode, setGameMode] = useQueryState("gameMode", "POINT 45");
+  const [gameMode, setGameMode] = useQueryState("gameMode", "");
   const [heroSelectionMode, setHeroSelectionMode] = useQueryState(
     "heroSelectionMode",
-    "ALL PICK"
+    ""
   );
   const [startDate, setStartDate] = useQueryState<Dayjs | null>(
     "startDate",
