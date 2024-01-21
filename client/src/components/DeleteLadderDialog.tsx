@@ -30,7 +30,10 @@ export function DeleteLadderDialog({
   };
   const handleDelete = async (passphrase: string): Promise<boolean> => {
     try {
-      const url = new URL(`/ladders/${ladderName}`, "http://localhost:8000");
+      const url = new URL(
+        `/ladders/${ladderName}`,
+        `http://localhost:${process.env.PORT || 8000}`
+      );
       const response = await fetch(url.href, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },

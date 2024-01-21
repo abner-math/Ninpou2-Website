@@ -1,7 +1,7 @@
 import { Request } from "express";
 import { filterQueryFromRequest } from "./filter";
 import { GamePlayer } from "../entities/game_player";
-import { AppDataSource } from "../db";
+import { AppDataSource } from "../../db";
 
 const playerRepository = AppDataSource.getRepository(GamePlayer);
 

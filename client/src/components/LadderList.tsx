@@ -39,7 +39,10 @@ export function LadderList({
   // update ladder list
   useEffect(() => {
     const fetchData = async () => {
-      const url = new URL("/ladders", "http://localhost:8000");
+      const url = new URL(
+        "/ladders",
+        `http://localhost:${process.env.PORT || 8000}`
+      );
       url.searchParams.set("search", search);
       try {
         const response = await fetch(url.href);

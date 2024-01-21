@@ -3,7 +3,7 @@ import { validationResult, checkSchema } from "express-validator";
 import * as bcrypt from "bcrypt";
 import { Game } from "../entities/game";
 import { Ladder } from "../entities/ladder";
-import { AppDataSource } from "../db";
+import { AppDataSource } from "../../db";
 
 const router = Router();
 const ladderRepository = AppDataSource.getRepository(Ladder);

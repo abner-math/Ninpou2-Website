@@ -5,9 +5,10 @@
   "main": "src/index.js",
   "scripts": {
     "build": "npx tsc",
-    "start": "node dist/src/index.js --env=production",
+    "start": "node dist/server/index.js --env=production",
     "dev": "nodemon src/index.ts",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts",
+    "deploy": "gcloud app deploy"
   },
   "repository": {
     "type": "git",
@@ -25,6 +26,7 @@
     "@types/morgan": "^1.9.9",
     "bcrypt": "^5.1.1",
     "class-transformer": "^0.5.1",
+    "client": "file:../client",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
@@ -33,6 +35,7 @@
     "pg": "^8.11.3",
     "query-string": "^8.1.0",
     "reflect-metadata": "^0.2.1",
+    "shared": "file:../shared",
     "typeorm": "^0.3.19"
   },
   "devDependencies": {

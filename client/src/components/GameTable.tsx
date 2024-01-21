@@ -89,7 +89,10 @@ export function GameTable({
         setIsRefetching(true);
       }
 
-      const url = new URL("/games", "http://localhost:8000");
+      const url = new URL(
+        "/games",
+        `http://localhost:${process.env.PORT || 8000}`
+      );
       url.searchParams.set("take", `${pagination.pageSize}`);
       url.searchParams.set(
         "skip",

@@ -59,7 +59,10 @@ export function PlayerTable({
         setIsRefetching(true);
       }
 
-      const url = new URL("/players", "http://localhost:8000");
+      const url = new URL(
+        "/players",
+        `http://localhost:${process.env.PORT || 8000}`
+      );
       url.searchParams.set("take", `${pagination.pageSize}`);
       url.searchParams.set(
         "skip",

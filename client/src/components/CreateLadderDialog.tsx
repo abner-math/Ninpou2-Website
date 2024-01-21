@@ -40,7 +40,10 @@ export function CreateLadderDialog({
     name: string,
     passphrase: string
   ): Promise<boolean> => {
-    const url = new URL("/ladders", "http://localhost:8000");
+    const url = new URL(
+      "/ladders",
+      `http://localhost:${process.env.PORT || 8000}`
+    );
     try {
       const response = await fetch(url.href, {
         method: "POST",

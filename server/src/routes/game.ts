@@ -8,7 +8,7 @@ import {
 } from "../../../shared/enums";
 import { Game } from "../entities/game";
 import { filterQueryFromRequest } from "../helpers/filter";
-import { AppDataSource } from "../db";
+import { AppDataSource } from "../../db";
 
 const router = Router();
 const gameRepository = AppDataSource.getRepository(Game);

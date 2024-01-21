@@ -39,7 +39,7 @@ export function AddGamesToLadderDialog({
   ): Promise<boolean> => {
     const url = new URL(
       `/ladders/${name}/games/${gameId}`,
-      "http://localhost:8000"
+      `http://localhost:${process.env.PORT || 8000}`
     );
     try {
       const response = await fetch(url.href, {
