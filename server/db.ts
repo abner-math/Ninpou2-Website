@@ -15,4 +15,7 @@ export const AppDataSource = new DataSource({
   entities: [Game, GamePlayer, Hero, Item, Player, Ladder],
   synchronize: true,
   logging: false,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });

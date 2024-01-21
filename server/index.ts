@@ -22,7 +22,6 @@ AppDataSource.initialize().catch((error) => {
 });
 
 app.use(cors({ origin: "*" }));
-app.set("trust proxy", true);
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(morgan("dev"));
