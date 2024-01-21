@@ -59,7 +59,9 @@ export function HeroTable({
 
       const url = new URL(
         "/heroes",
-        `http://localhost:${process.env.PORT || 8000}`
+        process.env.NODE_ENV === "production"
+          ? "https://ninpou2-9cc068a4d220.herokuapp.com"
+          : `http://localhost:${process.env.PORT || 8000}`
       );
       url.searchParams.set("take", `${pagination.pageSize}`);
       url.searchParams.set(

@@ -39,7 +39,9 @@ export function AddGamesToLadderDialog({
   ): Promise<boolean> => {
     const url = new URL(
       `/ladders/${name}/games/${gameId}`,
-      `http://localhost:${process.env.PORT || 8000}`
+      process.env.NODE_ENV === "production"
+        ? "https://ninpou2-9cc068a4d220.herokuapp.com"
+        : `http://localhost:${process.env.PORT || 8000}`
     );
     try {
       const response = await fetch(url.href, {

@@ -41,7 +41,9 @@ export function LadderList({
     const fetchData = async () => {
       const url = new URL(
         "/ladders",
-        `http://localhost:${process.env.PORT || 8000}`
+        process.env.NODE_ENV === "production"
+          ? "https://ninpou2-9cc068a4d220.herokuapp.com"
+          : `http://localhost:${process.env.PORT || 8000}`
       );
       url.searchParams.set("search", search);
       try {
