@@ -4,11 +4,11 @@
   "description": "",
   "main": "src/index.js",
   "scripts": {
-    "build": "npx tsc",
-    "start": "node dist/server/index.js --env=production",
+    "build": "cd client && npm run build && cd .. && npx tsc",
     "dev": "nodemon src/index.ts",
+    "start": "node dist/server/index.js --env=production",
     "lint": "eslint . --ext .ts",
-    "deploy": "gcloud app deploy"
+    "deploy": "git push heroku main"
   },
   "repository": {
     "type": "git",
