@@ -3,15 +3,13 @@
     "parser": "@typescript-eslint/parser",
     "plugins": [
         "@typescript-eslint",
-        "prettier",
         "react"
     ],
     "extends": [
         "eslint:recommended",
         "plugin:@typescript-eslint/eslint-recommended",
         "plugin:@typescript-eslint/recommended",
-        "plugin:react/recommended",
-        "prettier"
+        "plugin:react/recommended"
     ],
     "ignorePatterns": ["**/enums.ts"],
     "settings": {
