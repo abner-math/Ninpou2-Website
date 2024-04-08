@@ -129,7 +129,9 @@ router.get("/", async (req: Request, res: Response) => {
     ],
   });
   if (!req.query.draft) {
-    query.andWhere("game.isDraft IS NULL OR game.isDraft = false");
+    query.andWhere("(game.isDraft IS NULL OR game.isDraft = false)");
+  } else {
+    query.andWhere("game.isDraft = true");
   }
   if (!hasSorting) {
     query.orderBy("game.createdDate", "DESC");
