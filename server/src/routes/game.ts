@@ -128,6 +128,9 @@ router.get("/", async (req: Request, res: Response) => {
       { name: "balance", alias: "game.balance" },
     ],
   });
+  if (!req.query.draft) {
+    query.andWhere("game.isDraft IS NULL OR game.isDraft = false");
+  }
   if (!hasSorting) {
     query.orderBy("game.createdDate", "DESC");
   }

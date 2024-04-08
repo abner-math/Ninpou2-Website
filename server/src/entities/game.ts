@@ -39,4 +39,8 @@ export class Game implements IGame {
   ladders: Ladder[];
   @Column("text", { array: true })
   ladderNames: string[];
+  @Column({
+    nullable: true,
+  })
+  isDraft?: boolean;
 }
