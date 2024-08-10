@@ -155,7 +155,7 @@ router.post("/", gameValidationRules, async (req: Request, res: Response) => {
   const game = req.body as Game;
   game.rankeable =
     game.players.filter((player) => player.state === PlayerState.CONNECTED)
-      .length === 9 &&
+      .length >= 3 &&
     ((game.gameMode === GameMode.POINT_30 && game.durationSeconds >= 25 * 60) ||
       (game.gameMode === GameMode.POINT_45 &&
         game.durationSeconds >= 40 * 60) ||

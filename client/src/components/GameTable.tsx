@@ -383,8 +383,8 @@ export function GameTable({
         />
         {(!selectedLadder || selectedLadder === "public") && (
           <p>
-            *Only full house games without leavers are ranked in the public
-            ladder.
+            *Only games with more of two players without leavers are ranked in
+            the public ladder.
           </p>
         )}
         <MaterialReactTable table={table} />
